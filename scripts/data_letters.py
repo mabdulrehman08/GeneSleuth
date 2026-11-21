@@ -57,9 +57,12 @@ def bundle() -> dict:
     if sp.exists():
         shutil.copyfile(sp, ASSETS / "splits.json")
     metas = {}
+    sp_json = splits.load_splits()
+    current = {r["option_id"] for k in ("dev", "test", "demo") for r in sp_json[k]}
     for p in sorted((WORK / "letters").glob("*.json")):
         m = json.loads(p.read_text(encoding="utf-8"))
-        metas[m["option_id"]] = m
+        if m["option_id"] in current:  # skip letters of options that left the splits
+            metas[m["option_id"]] = m
     with gzip.open(ASSETS / "letters_meta.json.gz", "wt", encoding="utf-8", compresslevel=9) as f:
         json.dump(metas, f, separators=(",", ":"))
     sizes = [q.stat().st_size for q in (ASSETS / "letters").glob("*.pdf")]

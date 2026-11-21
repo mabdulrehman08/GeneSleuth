@@ -93,7 +93,7 @@ def short_condition(name: str) -> str:
 
 def region_word(row: dict, cand: dict | None = None) -> str:
     """Region wording for labels: 'splice site' for canonical splice, else the schema region word."""
-    if row["region"] == "splice" and cand and set(cand.get("mc", [])) & {"splice_donor_variant", "splice_acceptor_variant"}:
+    if row["region"] == "splice" and cand and cand.get("a_cons") in ("splice_donor_variant", "splice_acceptor_variant"):
         return "splice site"
     return REGION_WORD.get(row["region"], row["region"])
 
@@ -117,13 +117,19 @@ def _demo_rows() -> list[dict]:
     return anchor + rest
 
 
+def _disease_name(option_id: str, fallback: str) -> str:
+    """The HPO disease name the phenotypes were drawn from (matches the letter), else the ClinVar condition."""
+    m = letters.load_meta(option_id) or {}
+    return (m.get("detail") or {}).get("disease_name") or fallback
+
+
 def list_demo_options() -> list[DemoOption]:
     """Demo picker options labelled like 'SCN1A, splice site, Dravet syndrome' (only those whose letter is ready)."""
     cands = splits.load_candidates()["by_id"]
     out = []
     for r in _demo_rows():
         c = cands.get(r["option_id"])
-        cond = short_condition(r["condition"])
+        cond = short_condition(_disease_name(r["option_id"], r["condition"]))
         out.append(DemoOption(option_id=r["option_id"], gene=r["gene"], region=r["region"], condition=cond,
                               label=f"{r['gene']}, {region_word(r, c)}, {cond}"))
     return out
@@ -223,8 +229,8 @@ def build_case(option_id: str | None = None, sample_id: str | None = None, split
     funnel["suspects"] = len(suspects)
     cid = _case_id(option_id, sample, seed)
     case = Case(case_id=cid, sample_id=sample, referral_pdf=str(pdf), suspects=suspects, funnel=funnel)
-    truth = CaseTruth(case_id=cid, hidden_variant_id=planted.variant_id, gene=cand["gene"], condition=cand["condition"].replace("_", " "),
-                      clinvar_id=str(cand["variation_id"]), region=cand["region"],
+    truth = CaseTruth(case_id=cid, hidden_variant_id=planted.variant_id, gene=cand["gene"], condition=_disease_name(option_id, cand["condition"]).replace("_", " "),
+                      clinvar_id=str(cand["variation_id"]), region=planted.region,
                       true_phenotypes=[Phenotype(**p) for p in meta.get("phenotypes", [])],
                       split=real_split if real_split in ("dev", "test", "demo") else "demo")
     try:  # materialise the truth next to the case for the bench and debugging (never given to the agent)

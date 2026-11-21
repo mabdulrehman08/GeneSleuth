@@ -60,30 +60,62 @@ def load_candidates() -> dict:
             d = _read_json(p)
             by_id = {c["variation_id"]: c for c in d["candidates"]}
             by_id.setdefault(DNM1_ANCHOR["variation_id"], dict(DNM1_ANCHOR))
+            for c in by_id.values():
+                _annotate_candidate(c)
+                c["condition"] = display_condition(c)
             return {"report": d.get("report", {}), "by_id": by_id}
     raise FileNotFoundError("clinvar_candidates.json(.gz) not found in assets/ or DATA_DIR/work; run scripts/data_clinvar_candidates.py")
 
 
+GENERIC_CONDITIONS = {"inborn genetic diseases", "inborn genetic disease", "not provided", "not specified", "see cases", "none provided"}
+
+
+def display_condition(c: dict) -> str:
+    """First linked condition name that is not a generic umbrella term such as 'Inborn genetic diseases'."""
+    for n in c.get("conditions") or [c["condition"]]:
+        if n.replace("_", " ").strip().lower() not in GENERIC_CONDITIONS:
+            return n.replace("_", " ")
+    return c["condition"].replace("_", " ")
+
+
+def _annotate_candidate(c: dict) -> None:
+    """Add the annotation the agent will see (slice A1, MANE Select geometry, no network): a_region, a_cons, a_bd.
+
+    ClinVar's own consequence terms can disagree with MANE geometry (e.g. 'intron_variant' for a variant 5 bp from an exon),
+    so splits, labels and CaseTruth.region use this annotation, the same source as the background suspects.
+    """
+    if "a_region" in c:
+        return
+    from genesleuth.data import annotate
+    a = annotate.classify(c["chrom"], c["pos"], c["ref"], c["alt"])
+    c["a_region"], c["a_cons"], c["a_bd"] = a["region"], a["consequence"], a.get("boundary_distance")
+
+
+NC_OK = {"splice", "intron", "utr5", "utr3", "promoter"}
+
+
 def eligible(c: dict) -> bool:
-    """A candidate is usable when its disease maps to an HPO annotation by OMIM id or exact name."""
+    """Usable: disease maps to an HPO annotation by OMIM id or exact name, and the MANE annotation agrees with the pool
+    (non-coding candidates must annotate as splice/intron/UTR/promoter, coding ones as coding)."""
     from genesleuth.data import phenotypes
-    return phenotypes.pick_disease(c)[1] in ("omim", "name")
+    if phenotypes.pick_disease(c)[1] not in ("omim", "name"):
+        return False
+    return c["a_region"] in NC_OK if c["noncoding"] else c["a_region"] == "coding"
 
 
 def _canon(c: dict) -> bool:
-    """True for canonical splice donor/acceptor variants."""
-    return bool(set(c["mc"]) & {"splice_donor_variant", "splice_acceptor_variant"})
+    """True for canonical splice donor/acceptor variants (by the MANE annotation)."""
+    return c["a_cons"] in ("splice_donor_variant", "splice_acceptor_variant")
 
 
 def _stratum(c: dict) -> str:
-    """Region stratum used for TEST stratification."""
-    if c["region"] == "intron":
-        return "intron"
-    if c["region"] == "splice":
+    """Region stratum used for TEST stratification (annotation based)."""
+    r = c["a_region"]
+    if r == "splice":
         return "splice_canonical" if _canon(c) else "splice_region"
-    if c["region"] in ("utr5", "utr3", "promoter"):
+    if r in ("utr5", "utr3", "promoter"):
         return "utr_promoter"
-    return c["region"]
+    return r  # intron, coding
 
 
 def _take(rng: random.Random, pool: list[dict], n: int, gene_cap: int, used_genes: Counter) -> list[dict]:
@@ -106,7 +138,7 @@ def make_splits(seed: int = SEED) -> dict:
     cands = [c for c in load_candidates()["by_id"].values() if not c.get("named")]
     cands = sorted((c for c in cands if eligible(c)), key=lambda c: int(c["variation_id"]))
     nc = [c for c in cands if c["noncoding"]]
-    coding = [c for c in cands if not c["noncoding"] and c["region"] == "coding"]
+    coding = [c for c in cands if not c["noncoding"]]
     rng = random.Random(seed)
     taken: set = set()
 
@@ -116,7 +148,7 @@ def make_splits(seed: int = SEED) -> dict:
     # DEV: 5 non-coding, one per gene, mixed strata.
     dev: list[dict] = []
     used: Counter = Counter()
-    for stratum, n in (("intron", 2), ("splice_canonical", 2), ("splice_region", 1)):
+    for stratum, n in (("intron", 2), ("splice_region", 1), ("splice_canonical", 2)):
         got = _take(rng, avail([c for c in nc if _stratum(c) == stratum]), n, 1, used)
         dev += got
         taken |= {c["variation_id"] for c in got}
@@ -125,7 +157,7 @@ def make_splits(seed: int = SEED) -> dict:
         dev += got
         taken |= {c["variation_id"] for c in got}
     # TEST: 30 non-coding stratified + 6 coding controls, gene cap 3 (coding cap 1).
-    quotas = {"intron": 11, "splice_canonical": 12, "splice_region": 4, "utr_promoter": 3}
+    quotas = {"intron": 8, "splice_region": 8, "splice_canonical": 8, "utr_promoter": 3}
     test: list[dict] = []
     used = Counter()
     for stratum, n in quotas.items():
@@ -140,18 +172,34 @@ def make_splits(seed: int = SEED) -> dict:
     test += got
     taken |= {c["variation_id"] for c in got}
     # DEMO: deep non-coding pool minus DEV/TEST, DNM1 anchor included.
-    demo = [c for c in cands if c["deep_noncoding"] and c["variation_id"] not in taken]
-    demo.append(dict(DNM1_ANCHOR))
+    demo = [c for c in cands if c["deep_noncoding"] and not _canon(c) and c["variation_id"] not in taken]
+    demo.append(load_candidates()["by_id"][DNM1_ANCHOR["variation_id"]])
 
     def row(c, split):
-        return {"option_id": c["variation_id"], "split": split, "gene": c["gene"], "region": c["region"], "stratum": _stratum(c) if c.get("mc") else c["region"],
+        return {"option_id": c["variation_id"], "split": split, "gene": c["gene"], "region": c["a_region"], "stratum": _stratum(c),
                 "condition": c["condition"], "variant_id": c["variant_id"], "named": c.get("named")}
 
     return {"seed": seed, "dev": [row(c, "dev") for c in dev], "test": [row(c, "test") for c in test],
             "demo": [row(c, "demo") for c in sorted(demo, key=lambda c: (c["gene"], int(c["variation_id"])))],
             "counts": {"eligible_total": len(cands), "eligible_noncoding": len(nc), "dev": len(dev), "test": len(test),
                        "test_noncoding": len(test) - len(got), "test_coding": len(got), "demo": len(demo)},
-            "test_by_stratum": dict(Counter(_stratum(c) for c in test)), "dev_by_stratum": dict(Counter(_stratum(c) for c in dev))}
+            "named_cases": NAMED_INFO, "test_by_stratum": dict(Counter(_stratum(c) for c in test)), "dev_by_stratum": dict(Counter(_stratum(c) for c in dev))}
+
+
+NAMED_INFO = {
+    "DNM1_anchor": {"option_id": "4855726", "variant_id": "chr9-128225994-G-A", "status": "buildable (demo option, ClinVar VUS, likely memorized: never proof)"},
+    "MFSD8_c.999-556C>G": {"variant_id": "chr4-127922519-G-C", "status": "coordinate derived with VariantValidator (GRCh38, MANE NM_001371596.2), "
+                           "adjacent to the published pseudoexon chr4:127,922,520-127,922,617; gene NOT in the 58-gene panel, so no case is built"},
+    "PLA2G6_c.2034+355G>A": {"variant_id": "chr22-38115172-C-T", "status": "gene NOT in the 58-gene panel and no ClinVar record at this position; no case is built"},
+}
+
+
+def split_option_ids(split: str) -> list[str]:
+    """Option ids of 'dev', 'test', 'demo' or 'named' (the buildable named cases), for the benchmark runner."""
+    s = load_splits()
+    if split == "named":
+        return [r["option_id"] for k in ("dev", "test", "demo") for r in s[k] if r.get("named")]
+    return [r["option_id"] for r in s[split]]
 
 
 @lru_cache(maxsize=1)

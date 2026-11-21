@@ -11,6 +11,7 @@ Use cases: letters.py (letter text), build_case (CaseTruth), bench fixed recipe 
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import json
 import random
@@ -20,6 +21,17 @@ from genesleuth import config
 from genesleuth.schemas import Phenotype
 
 WORK = config.DATA_DIR / "work"
+ASSETS = config.ROOT / "assets"
+
+
+def _open(name: str):
+    """Open a text table: committed assets/<name>.gz first, then DATA_DIR/work/<name>."""
+    gz = ASSETS / (name + ".gz")
+    if gz.exists():
+        return gzip.open(gz, "rt", encoding="utf-8")
+    return open(WORK / name, encoding="utf-8")
+
+
 FREQ_WEIGHT = {"HP:0040280": 1.0, "HP:0040281": 0.9, "HP:0040282": 0.55, "HP:0040283": 0.17, "HP:0040284": 0.03, "HP:0040285": 0.0}
 UNKNOWN_WEIGHT = 0.3
 ABNORMALITY_ROOT = "HP:0000118"
@@ -37,14 +49,15 @@ def _rng(*parts) -> random.Random:
 @lru_cache(maxsize=1)
 def _terms() -> dict:
     """HPO term table: {hpo_id: {label, synonyms, parents}}."""
-    return json.loads((WORK / "hpo_terms.json").read_text(encoding="utf-8"))
+    with _open("hpo_terms.json") as f:
+        return json.load(f)
 
 
 @lru_cache(maxsize=1)
 def _diseases() -> tuple[dict, dict]:
     """(disease_id -> {name, terms:{hpo_id: weight}}, lower-case name -> [disease_id])."""
     dis: dict = {}
-    with open(WORK / "hpo_disease.tsv", encoding="utf-8") as f:
+    with _open("hpo_disease.tsv") as f:
         for r in csv.DictReader(f, delimiter="\t"):
             d = dis.setdefault(r["disease_id"], {"name": r["disease_name"], "terms": {}})
             fr = r["frequency"].strip()
@@ -74,7 +87,7 @@ def _diseases() -> tuple[dict, dict]:
 def _gene_diseases() -> dict:
     """gene -> [disease_id]."""
     out: dict = {}
-    with open(WORK / "hpo_gene_disease.tsv", encoding="utf-8") as f:
+    with _open("hpo_gene_disease.tsv") as f:
         for r in csv.DictReader(f, delimiter="\t"):
             out.setdefault(r["gene"], []).append(r["disease_id"])
     return out
