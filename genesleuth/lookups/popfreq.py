@@ -5,6 +5,9 @@ Feature: live gnomAD GraphQL query (https://gnomad.broadinstitute.org/api, datas
 Measured Nov 21 2026: ~2 s per request and HTTP 429 after roughly 4-10 requests in quick succession (about 10 requests
 per minute), so calls are spaced by MIN_INTERVAL seconds, a 429 is retried at most twice, and every definitive answer
 (including "not found in gnomAD", i.e. not observed) is cached on disk under DATA_DIR/cache/lookups/popfreq/.
+Order: (1) disk cache, (2) the gnomAD v4.1 genome frequencies slice A1 precomputed for every background variant of the
+sample (`frequencies` in suspects_<sample>.json[.gz], instant), (3) live gnomAD GraphQL (only for variants outside that
+table, e.g. the one planted variant). Without (2) every lookup costs ~7 s and an investigation can time out.
 Fallback chain when gnomAD cannot be reached: the allele frequency stored on the annotated suspect (keys af /
 gnomad_af / af_1kg / kg_af, if slice A1 stored one), otherwise {found: False, source: "unavailable"} with a note.
 Fallback answers are NOT cached, so a later call retries gnomAD.
@@ -12,6 +15,7 @@ Result: {found, source, af, ac, an, genome: {ac,an,af}|None, exome: {ac,an,af}|N
 """
 from __future__ import annotations
 
+import functools
 import threading
 import time
 
@@ -80,6 +84,36 @@ def _query_gnomad(vid: str) -> dict | None:
     return None
 
 
+@functools.lru_cache(maxsize=1)
+def _precomputed() -> dict[str, dict]:
+    """variant_id -> frequency record from suspects_<sample>.json[.gz] `frequencies` (assets/ first, then DATA_DIR/work)."""
+    import gzip
+    import json
+    from ._common import assets_dir, data_dir
+    out: dict[str, dict] = {}
+    for d in (assets_dir(), data_dir() / "work"):
+        for p in sorted(d.glob("suspects_*.json*")):
+            try:
+                txt = gzip.open(p, "rt", encoding="utf-8").read() if p.suffix == ".gz" else p.read_text(encoding="utf-8")
+                for k, v in (json.loads(txt).get("frequencies") or {}).items():
+                    out.setdefault(k, v)
+            except (OSError, ValueError):
+                continue
+    return out
+
+
+def _precomputed_af(vid: str) -> dict | None:
+    """gnomAD v4.1 genome AF precomputed for background variants (None when the variant is not in the table)."""
+    rec = _precomputed().get(vid)
+    if not rec or rec.get("gnomad_af") is None or not str(rec.get("af_source", "")).startswith("gnomad"):
+        return None
+    an = rec.get("gnomad_an")
+    af = float(rec["gnomad_af"])
+    return {"found": True, "source": "gnomAD v4.1 genomes (precomputed for the background genome)", "af": af,
+            "ac": int(round(af * an)) if an else None, "an": int(an) if an else None, "genome": None, "exome": None,
+            "popmax_af": rec.get("gnomad_grpmax")}
+
+
 def _stored_af(vid: str) -> dict | None:
     """AF kept on the annotated suspect by slice A1, if any."""
     from .region import _suspect_index
@@ -99,6 +133,9 @@ def population_frequency(variant_id: str) -> dict:
     hit = cache_get("popfreq", vid)
     if hit is not None:
         return hit
+    pre = _precomputed_af(vid)
+    if pre is not None:
+        return pre
     res = _query_gnomad(vid)
     if res is not None:
         cache_put("popfreq", vid, res)
