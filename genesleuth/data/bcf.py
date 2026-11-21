@@ -29,11 +29,13 @@ def to_wsl_path(p) -> str:
         return s
     if s.startswith("/"):
         return s
-    s = str(Path(s).resolve()) if not re.match(r"^[A-Za-z]:[\/]", s) else s
-    m = re.match(r"^([A-Za-z]):[\/](.*)$", s)
+    s = s.replace(chr(92), "/")
+    if not re.match(r"^[A-Za-z]:/", s):
+        s = str(Path(s).resolve()).replace(chr(92), "/")
+    m = re.match(r"^([A-Za-z]):/(.*)$", s)
     if not m:
-        return s.replace("\\", "/")
-    return f"/mnt/{m.group(1).lower()}/{m.group(2).replace(chr(92), '/')}"
+        return s
+    return "/mnt/" + m.group(1).lower() + "/" + m.group(2)
 
 
 def run_tool(tool: str, args: list[str], stdin: bytes | None = None,
