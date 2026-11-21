@@ -17,6 +17,10 @@ import subprocess
 from pathlib import Path
 
 WSL_DISTRO = "Ubuntu-22.04"
+# The apt bcftools 1.13 / htslib in Ubuntu 22.04 is built WITHOUT libcurl, so it cannot open https:// URLs
+# ("Protocol not supported"). A libcurl-enabled bcftools 1.25 lives in ~/bio/bin (micromamba env); use it
+# when present, else fall back to whatever is on PATH.
+_LAUNCH = 'P="$HOME/bio/bin"; if [ -x "$P/$0" ]; then export PATH="$P:$PATH"; fi; exec "$0" "$@"'
 
 
 def to_wsl_path(p) -> str:
@@ -41,7 +45,7 @@ def to_wsl_path(p) -> str:
 def run_tool(tool: str, args: list[str], stdin: bytes | None = None,
              timeout: float | None = None, check: bool = False) -> subprocess.CompletedProcess:
     """Run `tool` (bcftools / tabix / bgzip) inside WSL; stdout/stderr come back as bytes."""
-    cmd = ["wsl", "-d", WSL_DISTRO, "--", tool, *[str(a) for a in args]]
+    cmd = ["wsl", "-d", WSL_DISTRO, "--exec", "bash", "-c", _LAUNCH, tool, *[str(a) for a in args]]
     return subprocess.run(cmd, input=stdin, capture_output=True, timeout=timeout, check=check)
 
 
@@ -53,5 +57,6 @@ def run_bcftools(args: list[str], stdin: bytes | None = None,
 
 def run_shell(script: str, timeout: float | None = None) -> subprocess.CompletedProcess:
     """Run a bash pipeline inside WSL (for bcftools | bcftools chains). Paths must already be WSL paths."""
-    cmd = ["wsl", "-d", WSL_DISTRO, "--", "bash", "-o", "pipefail", "-c", script]
+    script = 'export PATH="$HOME/bio/bin:$PATH"; ' + script
+    cmd = ["wsl", "-d", WSL_DISTRO, "--exec", "bash", "-o", "pipefail", "-c", script]
     return subprocess.run(cmd, capture_output=True, timeout=timeout)
