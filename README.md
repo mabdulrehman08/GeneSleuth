@@ -4,7 +4,9 @@ An AI detective that helps geneticists find the hidden cause of unsolved genetic
 
 ## Watch it run
 
-**[Watch one real run at 2x speed (2 minutes)](demo/recordings/live_demo_run_2026-11-21_2x.mp4)** · [same run in real time (3 min 54 s)](demo/recordings/live_demo_run_2026-11-21.mp4)
+![GeneSleuth live demo, one real run at 2x speed](demo/recordings/live_demo_run_2026-11-21_2x.gif)
+
+*One real run at 2x speed (2 minutes), plays automatically. Video files: [2x speed (mp4)](demo/recordings/live_demo_run_2026-11-21_2x.mp4) · [real time, 3 min 54 s (mp4)](demo/recordings/live_demo_run_2026-11-21.mp4)*
 
 A screen recording of the app, one real run, unedited apart from the speed-up: Random case, the referral letter and funnel (12,924 variants in the panel regions, 282 suspects), the live investigation (12 AlphaGenome calls, 20 claims checked), then Reveal: the hidden variant ranked #1 of 282 and its AlphaGenome tracks in brain and blood. The investigation took 171 seconds in real time. The recording has a low frame rate and no sound.
 
