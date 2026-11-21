@@ -50,6 +50,17 @@ FEATURES_TSV = WORK / "mane_features.tsv.gz"
 PANEL_NAME = "Genetic epilepsy"
 
 
+ASSETS = config.ROOT / "assets"
+
+
+def find_file(name: str) -> Path:
+    """Read order for every data file: committed ROOT/assets first, then DATA_DIR/work (may not exist)."""
+    for base in (ASSETS, WORK):
+        if (base / name).exists():
+            return base / name
+    return WORK / name
+
+
 def _atomic_write(path: Path, data: bytes) -> None:
     """Write bytes to `path` through a temp file + rename (shared dir, other slices read concurrently)."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -146,6 +157,9 @@ def write_all() -> list[dict]:
     _atomic_write(REGIONS_R, ("\n".join(
         f"{r['chrom']}\t{r['start']}\t{r['end']}" for r in regions) + "\n").encode())
     n = build_features(regions)
+    ASSETS.mkdir(exist_ok=True)
+    for name in ("panel_regions.tsv", "mane_features.tsv.gz"):
+        _atomic_write(ASSETS / name, (WORK / name).read_bytes())
     print(f"{len(regions)} genes, {sum(r['end'] - r['start'] + 1 for r in regions):,} bp, {n} features")
     load_panel_regions.cache_clear()
     return regions
@@ -154,10 +168,12 @@ def write_all() -> list[dict]:
 @lru_cache(maxsize=1)
 def load_panel_regions() -> list[dict]:
     """Return panel_regions.tsv as a list of dicts (ints for start/end/tss). Builds it if missing."""
-    if not REGIONS_TSV.exists():
+    path = find_file("panel_regions.tsv")
+    if not path.exists():
         write_all()
+        path = REGIONS_TSV
     out = []
-    with open(REGIONS_TSV) as fh:
+    with open(path) as fh:
         header = fh.readline().rstrip("\n").split("\t")
         for line in fh:
             d = dict(zip(header, line.rstrip("\n").split("\t")))
@@ -178,10 +194,12 @@ def gene_at(chrom: str, pos: int) -> dict | None:
 @lru_cache(maxsize=1)
 def load_features() -> dict[str, list[dict]]:
     """Return {gene: [feature dicts]} from mane_features.tsv.gz."""
-    if not FEATURES_TSV.exists():
+    path = find_file("mane_features.tsv.gz")
+    if not path.exists():
         write_all()
+        path = FEATURES_TSV
     feats: dict[str, list[dict]] = {}
-    with gzip.open(FEATURES_TSV, "rt") as fh:
+    with gzip.open(path, "rt") as fh:
         header = fh.readline().rstrip("\n").split("\t")
         for line in fh:
             d = dict(zip(header, line.rstrip("\n").split("\t")))
