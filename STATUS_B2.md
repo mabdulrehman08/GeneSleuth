@@ -1,6 +1,6 @@
 # B2 demo and docs
 
-Updated 2026-11-21 13:19:55 EST
+Updated 2026-11-21 13:20:31 EST
 
 ## Done
 
@@ -15,7 +15,7 @@ Updated 2026-11-21 13:19:55 EST
 
 ## Blocked
 
-- Shell DNS cannot resolve GitHub, PyPI, or npm. The initial push, dependency install, Gemini docs MCP install, and Gemini skill install failed. GitHub's API reported an empty repository.
+- Shell DNS cannot resolve GitHub, PyPI, or npm. Both push attempts, the dependency install, the Gemini docs MCP install, and the Gemini skill install failed. GitHub's API reported an empty repository at the 1:20 p.m. checkpoint.
 - The sandbox denied creation of `~/genesleuth-data`. This checkout temporarily uses `/tmp/genesleuth-data`.
 
 ## NEEDS FROM B1
@@ -32,4 +32,4 @@ Updated 2026-11-21 13:19:55 EST
 - If the terminal can reach the network, push the contract using `git push -u origin main` and install `requirements.txt` in the local virtual environment.
 - Create `~/genesleuth-data` and set the same absolute `GENESLEUTH_DATA_DIR` in both agents' checkouts when the shared location is available.
 - Run `npx add-mcp "https://gemini-api-docs-mcp.dev"` and `npx skills add google-gemini/gemini-skills --skill gemini-api-dev` from a network-enabled terminal. Restart the coding session if required.
-- If the research briefs are unavailable at 1:20 p.m. ET, place all five files under `docs/research/` in this local checkout. Side A owns those files.
+- Place all five research briefs under `docs/research/` in this local checkout, or attach them in chat. Side A owns those files.

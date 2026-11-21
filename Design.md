@@ -1,6 +1,6 @@
 # GeneSleuth design
 
-This document covers the live demo and reviewer workflow. See the [agent design](docs/DESIGN_AGENT.md), [data design](docs/DESIGN_DATA.md), and [benchmark](docs/BENCHMARK.md) for their respective components.
+This document specifies the planned live demo and reviewer workflow. See the [agent design](docs/DESIGN_AGENT.md), [data design](docs/DESIGN_DATA.md), and [benchmark](docs/BENCHMARK.md) for their respective components.
 
 ## Case lifecycle
 
