@@ -1,6 +1,6 @@
 # B2 demo and docs
 
-Updated 2026-11-21 13:17:33 EST
+Updated 2026-11-21 13:19:55 EST
 
 ## Done
 
@@ -10,7 +10,7 @@ Updated 2026-11-21 13:17:33 EST
 
 ## In progress
 
-- Demo design, runbook, pitch, and submission checklist.
+- README, design, pitch, video script, and submission checklist drafted. Benchmark and real-runtime sections are pending the other agents' results.
 - Waiting for the five team research briefs before writing server and frontend code.
 
 ## Blocked
@@ -24,6 +24,7 @@ Updated 2026-11-21 13:17:33 EST
 - The `look_again` signature, how it identifies the existing session, and its result and event shape.
 - Structured trace fields for Decision 1 triage and checker counts, rejected claims and revisions, model fallbacks, elapsed budgets, and run cost.
 - A stable B1 entry point for the Decisions API smoke check.
+- From Side A, the background-only suspect source and the demo asset setup command.
 
 ## HUMAN TO DO
 
