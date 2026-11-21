@@ -167,8 +167,11 @@ def summarize(records: list[CaseRecord]) -> dict:
     out["filter_recall"] = prop(sum(1 for f in flags if f), len(flags))
 
     ok = [r for r in records if r.result is not None]
-    out["median_ag_calls"] = _median(r.result.n_alphagenome_calls for r in ok)
-    out["median_tool_calls"] = _median(r.result.n_tool_calls for r in ok)
+    # Medians of per-run effort use only runs that finished: an errored run has no trace, so counting its 0 would drag the median down.
+    done = [r for r in ok if r.result.status == "ok"]
+    out["n_finished"] = len(done)
+    out["median_ag_calls"] = _median(r.result.n_alphagenome_calls for r in done)
+    out["median_tool_calls"] = _median(r.result.n_tool_calls for r in done)
     out["median_time_s"] = _median(r.time_s for r in records)
     out["claims_checked_total"] = sum(r.result.n_claims_checked for r in ok)
     out["claims_rejected_total"] = sum(r.result.n_claims_rejected for r in ok)

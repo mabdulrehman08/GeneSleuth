@@ -57,14 +57,14 @@ def make_result(case_id: str, mode: str, truth: CaseTruth, hidden_rank: Optional
 
 
 def write_result(root: Path, split: str, mode: str, case_id: str, hidden_rank: Optional[int], region: str = "intron",
-                 letter_type: str = "clean", stub: bool = True, **kw) -> Path:
+                 letter_type: str = "clean", stub: bool = True, meta_extra: Optional[dict] = None, **kw) -> Path:
     """Write bench/results-style JSON for one (mode, case)."""
     truth = make_truth(case_id, region=region, split=split)
-    res = make_result(case_id, mode, truth, hidden_rank, **kw)
+    res = make_result(case_id, "full" if mode.startswith("full") else mode, truth, hidden_rank, **kw)
     d = Path(root) / split / mode
     d.mkdir(parents=True, exist_ok=True)
     p = d / f"{case_id}.json"
     meta = {"letter_type": letter_type, "hidden_in_suspects": True, "n_suspects": 200, "wall_s": 12.0, "stub": stub,
-            "profile": "bench"}
+            "profile": "bench", **(meta_extra or {})}
     p.write_text(json.dumps({"result": res.model_dump(), "truth": truth.model_dump(), "meta": meta}), encoding="utf-8")
     return p

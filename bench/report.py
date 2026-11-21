@@ -28,12 +28,12 @@ ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "bench" / "results"
 DOC = ROOT / "docs" / "BENCHMARK.md"
 
-MODE_ORDER = ["gemini_only", "atlas_only", "alphagenome_only", "fixed_recipe", "triage_only", "full"]
+MODE_ORDER = ["gemini_only", "atlas_only", "alphagenome_only", "fixed_recipe", "triage_only", "full_first_run", "full"]
 MODE_LABEL = {
     "full": "GeneSleuth (full agent)", "gemini_only": "Gemini 4, no tools", "atlas_only": "Atlas AVI only",
     "alphagenome_only": "AlphaGenome only (brain)", "fixed_recipe": "Fixed recipe (no LLM)", "triage_only": "Decision 1 triage only",
 }
-MODE_SHORT = {"full": "GeneSleuth\nfull agent", "gemini_only": "Gemini 4\nno tools", "atlas_only": "Atlas AVI\nonly",
+MODE_SHORT = {"full": "GeneSleuth\nfull agent", "full_first_run": "GeneSleuth\nfirst run", "gemini_only": "Gemini 4\nno tools", "atlas_only": "Atlas AVI\nonly",
               "alphagenome_only": "AlphaGenome\nonly", "fixed_recipe": "Fixed\nrecipe", "triage_only": "Decision 1\ntriage"}
 FAILURE_CATEGORIES = ["never_inspected", "wrong_tissue", "weak_alphagenome_effect", "phenotype_mismatch", "outranked_by_coding",
                       "checker_rejected_true_claim", "unscorable_variant_type", "missed_second_hit_or_common_allele", "error"]
@@ -210,6 +210,7 @@ def write_chart(analysis: dict, n_cases: int, out: Path, stub: bool = False) -> 
 
     modes = [m for m in ordered_modes(analysis) if m != "triage_only" or m in analysis]
     strong, gray_dark, gray_light, ink = "#0F766E", "#6B7280", "#B8BDC6", "#1F2937"
+    light_teal = "#7FBDB6"
     plt.rcParams.update({"font.size": 20, "axes.titlesize": 24, "axes.labelsize": 22, "font.family": "DejaVu Sans"})
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 9), dpi=100, gridspec_kw={"width_ratios": [1, 1.25]})
     fig.patch.set_facecolor("white")
@@ -222,7 +223,7 @@ def write_chart(analysis: dict, n_cases: int, out: Path, stub: bool = False) -> 
     for i, m in enumerate(modes):
         p = analysis[m]["overall"]["hit@5"]
         val = 0 if p["n"] == 0 else 100 * p["p"]
-        ax1.bar(i, val, color=strong if m == "full" else gray_dark, width=0.62)
+        ax1.bar(i, val, color=strong if m == "full" else (light_teal if m == "full_first_run" else gray_dark), width=0.62)
         if p["n"]:
             ax1.errorbar(i, val, yerr=err(p), color=ink, capsize=8, lw=2.5, capthick=2.5)
             ax1.text(i, min(100 * p["hi"] + 3, 103), f"{val:.0f}%", ha="center", va="bottom", fontsize=22, fontweight="bold", color=ink)
@@ -241,9 +242,13 @@ def write_chart(analysis: dict, n_cases: int, out: Path, stub: bool = False) -> 
                 continue
             p = s["hit@5"]
             val = 100 * p["p"] if p["n"] else 0
-            base = strong if m == "full" else (gray_dark if j == 0 else gray_light)
+            base = gray_dark if j == 0 else gray_light
+            if m == "full":
+                base = strong if j == 0 else "#5EAAA3"
+            elif m == "full_first_run":
+                base = "#7FBDB6" if j == 0 else "#BFDEDA"
             x = i + (j - 0.5) * w
-            ax2.bar(x, val, width=w * 0.94, color=base if m != "full" else (strong if j == 0 else "#5EAAA3"))
+            ax2.bar(x, val, width=w * 0.94, color=base)
             if p["n"]:
                 ax2.errorbar(x, val, yerr=err(p), color=ink, capsize=5, lw=2, capthick=2)
     from matplotlib.patches import Patch
@@ -280,6 +285,18 @@ def _headline_table(analysis: dict) -> list[str]:
         mr = num(s["median_rank"]) + ("+" if s["median_rank_is_lower_bound"] else "")
         rows.append(f"| {MODE_LABEL.get(m, m)} | {s['n']} | {pct(s['hit@1'])} | {pct(s['hit@5'])} | {pct(s['hit@10'])} | "
                     f"{s['mrr@10']:.2f} | {mr} | {pct(s['filter_recall'])} |")
+    return rows
+
+
+def _completed_table(by_mode: dict) -> list[str]:
+    """Secondary view: only runs that finished (status ok). Never the headline; errored runs are misses there."""
+    rows = ["| Mode | runs finished / total | hit@1 | hit@5 | hit@10 |", "|---|---|---|---|---|"]
+    for m in ordered_modes(by_mode):
+        ok = [r for r in by_mode[m] if not r.is_error]
+        s = M.summarize(ok) if ok else None
+        total = len(by_mode[m])
+        rows.append(f"| {MODE_LABEL.get(m, m)} | {len(ok)} / {total} | " +
+                    (f"{pct(s['hit@1'])} | {pct(s['hit@5'])} | {pct(s['hit@10'])} |" if s else "n/a | n/a | n/a |"))
     return rows
 
 
@@ -349,12 +366,43 @@ def _named_section(results_dir: Path) -> list[str]:
     return rows + [""]
 
 
+def _rerun_section(by_mode: dict) -> list[str]:
+    """Explain exactly which full-agent runs were repeated, why, and how each one turned out. Empty if nothing was rerun."""
+    first = {r.case_id: r for r in by_mode.get("full_first_run", [])}
+    rerun = [r for r in by_mode.get("full", []) if r.meta.get("retried")]
+    if not first or not rerun:
+        return []
+    reasons = sorted({(first[r.case_id].result.error if first[r.case_id].result else "?") or "?" for r in rerun if r.case_id in first})
+    n_err = sum(1 for r in first.values() if r.is_error)
+    n_err = sum(1 for r in first.values() if r.is_error)
+    out = ["## What was rerun, and why", "",
+           f"In the first TEST run, {n_err} of {len(first)} full-agent runs ended with an error: "
+           + "; ".join(f"`{x}`" for x in reasons) + ". That is the demo-profile deadline being reached before the agent submitted "
+           "(four cases and their arms ran at the same time, so those runs were also slower than they would be alone). "
+           f"Following the pre-registered rule (crashes may be rerun, failed cases only, and noted), {len(rerun)} of those {n_err} cases were "
+           "rerun for the full arm, with the longer `bench` profile limits (360 s deadline)"
+           + ("" if len(rerun) == n_err else f"; the other {n_err - len(rerun)} were not rerun and still count as misses in the second row")
+           + ". No other arm and no other case was rerun, "
+           "nothing was tuned on TEST, and the first-run results are kept unchanged in `full_first_run/` and shown in their own row.", "",
+           "| case | gene | region | letter | first run | rerun | rerun time (s) |", "|---|---|---|---|---|---|---|"]
+    for r in sorted(rerun, key=lambda x: x.case_id):
+        res = "error: " + (r.result.error or "")[:60] if r.is_error else (f"rank {r.rank}" if r.rank else "not in top 10")
+        out.append(f"| {r.case_id} | {r.truth.gene} | {r.truth.region} | {r.letter_type} | error (deadline) | {res} | {num(r.time_s, 0)} |")
+    return out + [""]
+
+
 def build_report(split: str, results_dir: Path = RESULTS, calls_path: Optional[Path] = None) -> dict:
     """Write report.md, chart.png and failures.md for results_dir/split. Returns the pieces for reuse (BENCHMARK.md)."""
     split_dir = results_dir / split
     by_mode = M.load_split(split_dir)
     if not by_mode:
         raise SystemExit(f"no results under {split_dir}")
+    if "full_first_run" in by_mode:
+        n_to = sum(1 for r in by_mode["full_first_run"] if r.is_error)
+        n_rr = sum(1 for r in by_mode.get("full", []) if r.meta.get("retried"))
+        MODE_LABEL["full_first_run"] = f"GeneSleuth (full agent), as first run (demo budget, {n_to} timeouts counted as misses)"
+        MODE_LABEL["full"] = (f"GeneSleuth (full agent), after rerunning {n_rr} of the {n_to} timed-out cases with the longer budget"
+                              if n_rr else "GeneSleuth (full agent)")
     analysis = M.analyze(by_mode)
     calls = M.load_calls(calls_path or (config.CACHE_DIR / "calls.jsonl"))
     cost = {m: M.cost_per_case(rs, calls) for m, rs in by_mode.items()}
@@ -376,8 +424,14 @@ def build_report(split: str, results_dir: Path = RESULTS, calls_path: Optional[P
           f"With n this small the intervals are wide; read the interval, not the point estimate. Errored runs count as misses.", "",
           "![chart](chart.png)", "", "## Headline", ""] + _headline_table(analysis) + [
           "", "Rank 11+ or missing counts as a miss. MRR is MRR@10. Median rank treats a miss as 11 (`+` = at least that).", "",
-          "## Resources", ""] + _resource_table(analysis, cost) + [
-          "", "Cost is read from `calls.jsonl` (Gemini calls only; AlphaGenome calls are not billed per call here). "
+          "Both full-agent rows are shown on purpose: the first row is the pre-registered first run; the second differs only in that the "
+          "timed-out cases were repeated (see 'What was rerun, and why').", "",
+          "### Among runs that finished (not the headline)", "",
+          "Errored runs count as misses in the headline above. This table drops them, to show how an arm does when it returns an "
+          "answer. It is biased toward easier or faster cases, so do not quote it instead of the headline.", ""] + _completed_table(by_mode) + [
+          ""] + _rerun_section(by_mode) + ["## Resources", ""] + _resource_table(analysis, cost) + [
+          "", "Median AlphaGenome and tool calls are over runs that finished (an errored run has no trace). Median time includes errored runs. "
+          "Cost is the agent's own per-run accounting when present, else read from `calls.jsonl` (Gemini calls only; AlphaGenome calls are not billed per call here). "
               "`~` = attributed by time window, so approximate.", "",
           "## Breakdowns (hit@5)", ""] + _breakdown_tables(analysis) + ["## Full-agent failure categories", ""]
     if counts:

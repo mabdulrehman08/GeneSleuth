@@ -70,3 +70,21 @@ def test_fill_doc(tmp_path):
     assert fill_doc("test", {"tables": ["# Benchmark report: test", "| t |"]}, doc)
     t = doc.read_text()
     assert "old" not in t and "| t |" in t and t.startswith("a\n") and t.endswith("z\n")
+
+
+def test_rerun_rows_and_section(tmp_path):
+    for i in range(4):
+        # first run: cases 0 and 1 timed out
+        _synth.write_result(tmp_path, "test", "full_first_run", f"c{i}", None if i < 2 else 1, status="error" if i < 2 else "ok")
+        # current full row: cases 0 and 1 were rerun
+        _synth.write_result(tmp_path, "test", "full", f"c{i}", 1 if i < 2 else 1, meta_extra={"retried": True} if i < 2 else None)
+        _synth.write_result(tmp_path, "test", "gemini_only", f"c{i}", 1)
+    from bench import report as R
+    rep = build_report("test", tmp_path, calls_path=tmp_path / "none.jsonl")
+    md = (tmp_path / "test" / "report.md").read_text()
+    assert "as first run (demo budget, 2 timeouts counted as misses)" in md
+    assert "after rerunning 2 of the 2 timed-out cases with the longer budget" in md
+    assert "What was rerun, and why" in md and "full_first_run/" in md
+    assert rep["analysis"]["full_first_run"]["overall"]["hit@5"]["k"] == 2
+    assert rep["analysis"]["full"]["overall"]["hit@5"]["k"] == 4
+    R.MODE_LABEL["full"] = "GeneSleuth (full agent)"

@@ -273,6 +273,7 @@ def main(argv=None) -> None:
     ap.add_argument("--seed-base", type=int, default=1000)
     ap.add_argument("--full-profile", default=None, help="profile for mode 'full' only (e.g. demo); other arms use --profile")
     ap.add_argument("--parallel-modes", action="store_true", help="run the arms of one case concurrently (wall time is then contended)")
+    ap.add_argument("--note", default=None, help="free-text note stored in every result's meta (e.g. why a rerun was done)")
     ap.add_argument("--gemini-timeout-ms", type=int, default=None,
                     help="override Agent B's per-request Gemini timeout for this run (recorded in meta); default = unchanged")
     a = ap.parse_args(argv)
@@ -297,6 +298,8 @@ def main(argv=None) -> None:
         gc.GEMINI_TIMEOUT_MS = a.gemini_timeout_ms
         print(f"NOTE: Gemini request timeout overridden to {a.gemini_timeout_ms} ms (recorded in meta)", flush=True)
     RUN_NOTES["gemini_timeout_ms"] = a.gemini_timeout_ms
+    if a.note:
+        RUN_NOTES["note"] = a.note
     if not a.dry_run:
         warm_gemini_clients()
     standins = preflight(modes, a.dry_run, a.allow_standin)

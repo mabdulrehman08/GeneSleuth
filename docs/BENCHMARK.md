@@ -119,6 +119,42 @@ _Not run yet. This block is replaced by `python -m bench.report --split test --f
 
 <!-- RESULTS:END -->
 
+## What this benchmark can and cannot show
+
+Read the results block with these points in mind. We did not tune anything on TEST, and we are not rewording numbers to look better.
+
+- **The planted variants stand out from the background by region class.** Each case has 282 suspects. Measured over the 20 TEST cases, the 281
+  background suspects per case are on average about 245 intronic, 22 intergenic, 7 in the 3' UTR, 4 coding and 3 promoter, and none are splice
+  variants. The planted variants are 11 splice (7 canonical acceptor/donor, 4 splice-region), 5 intronic, 3 coding and 1 5' UTR. So a
+  splice-class variant is rare among the background and the planted one is easy to spot by consequence alone. This is a property of using one
+  real background genome with a rarity filter plus ClinVar splice variants; it is not a flaw in any arm, but it inflates every arm that can see
+  consequence or region.
+- **AlphaGenome-only and the fixed recipe are strong here for that reason.** AlphaGenome-only reaches 94% hit@5 on the 17 non-coding cases and 0 of
+  3 on the coding ones; a canonical splice-site change is exactly what a splicing-aware score ranks first. The fixed recipe adds a severity term
+  that puts splice variants near the top. Do not read their numbers as a general estimate of how they would do on a real unsolved case.
+- **Gemini with no tools reaches 85% because the letter plus a 58-gene panel nearly identifies the gene.** The suspects table shows gene and
+  region for every candidate, so the model needs only to pick the right gene and the odd splice-class variant inside it. We also ran no memorization controls
+  on TEST (see the leakage-controls section: not run, so not reported), and ClinVar variants may be in the model's training data.
+- **The Atlas arm scored 0 because of a bug, not because Atlas is weak.** The Atlas client did not find the AVI scorer (the Atlas metadata names it
+  `AVI_SCORE`, and the result rows identify variants in a `variant` column, not `variant_id`), so `atlas_only` returned no scores for any suspect
+  and `fixed_recipe` ran with its Atlas term set to zero. The report's stand-in banner says so. The Atlas arm, which we called the real bar to
+  beat, was therefore not measured.
+- **n = 20, so the intervals are wide** (for example 11/20 is 34-74%). Differences of 20 points or less between arms are not distinguishable here.
+- **The full agent did not beat the baselines on the first run, and the results shown here are that first run.** Counting its 9 deadline errors as
+  misses it reached 55% hit@5, below Gemini with no tools (85%), AlphaGenome-only (80%) and the fixed recipe (80%). All 9 errors are the same
+  failure ("did not return a fact-checked shortlist within its budget", the demo-profile deadline) and all 9 are cases with a clean (text) letter:
+  9 of 12 clean-letter cases errored against 0 of 8 scanned ones, so the full agent's clean-vs-scanned breakdown (25% vs 100% hit@5) is an artifact of
+  those timeouts, not evidence that it reads scans better. We do not know why the clean-letter cases were the slow ones. Among the 11 runs that
+  finished, the hidden variant was in the top 10 every time (10 at rank 1, one at rank 5); that subset is shown separately in the report and is not the headline.
+  The 9 timed-out cases have not been rerun in the numbers shown here.
+- **Gemini with no tools also had timeouts:** 3 of its 20 runs hit the request timeout and are counted as misses; all 17 that finished had the hidden variant at rank 1.
+- **AlphaGenome use by the full agent was uneven.** Of the 11 finished full runs, 5 made no live AlphaGenome call at all (they ranked from region, frequency and phenotype
+  lookups) and the others made 3 to 21; 10 of 11 used the whole 45-tool-call budget. So "backed by AlphaGenome" does not describe every shortlist here.
+- **What it can show:** the end-to-end pipeline (letter reading, filtering, live scoring, fact-checking) works on real inputs and ranks a hidden variant first when it
+  finishes; the per-arm costs and times; and the kinds of failures (all full-agent failures here were budget/deadline failures, not wrong-answer failures).
+  **What it cannot show:** that the agent beats simpler arms in a harder, more realistic background (benign splice variants present, recessive disease,
+  non-SNV alleles, messy real letters), or how it compares with the Atlas AVI baseline.
+
 ## Limitations
 
 - **One background sample.** All cases share one person's genome. A different background would change the suspects; we did not
