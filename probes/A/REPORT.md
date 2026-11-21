@@ -28,7 +28,7 @@ Raw outputs: `probes/A/outputs/` (script: `probes/A/probe_sources.sh`, timings i
 - Funnel: AF < 0.1: 1,429; **AF < 0.01: 281**; AF < 0.001: 83; AF < 0.0001: 37. AF < 0.001 is below the 100-300 target, so the pipeline uses AF < 0.01 (281 suspects, all kept; no intron trimming needed).
 - Suspect regions: 245 intron, 22 intergenic (flank), 7 3'UTR, 4 coding, 3 promoter, 0 splice. WWOX alone has 95 suspects (largest gene; drop it from the panel if you want a more even spread).
 - Annotation: GTF classification is instant; coding variants get VEP most_severe (about 2 s per batch). One planted non-coding variant annotates in about 0.01 s.
-- Cross-check against ClinVar MC terms (P/LP SNVs in panel regions): splice donor/acceptor calls agree (790/790 and 631/631 exact among the unambiguous classes); remaining differences are other-isoform terms (MANE Select only is used here).
+- Cross-check against ClinVar MC terms (`probes/A/validate_annotate.py`, P/LP SNVs in panel regions): 790 splice_donor and 631 splice_acceptor ClinVar calls get the same term from our MANE Select classifier; about 110 more fall outside the MANE span of the nearest gene (flank/other isoform). Other differences are ClinVar listing terms from non-MANE isoforms (e.g. 5'UTR in another isoform vs synonymous in MANE), where MANE Select is the intended reference.
 
 ## Not blocked
 Nothing blocks the other slices. The only thing to know: use `genesleuth.data.bcf` for bcftools (it picks the libcurl build).
