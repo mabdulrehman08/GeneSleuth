@@ -95,6 +95,11 @@ input:focus, textarea:focus { border-color: var(--brain); }
 .organ-label { font-family: var(--sans); font-size: 12px; fill: var(--muted); }
 .swap { animation: swap 4s steps(1) 1.2s both; }
 @keyframes swap { 0% { fill: var(--muted); } 100% { fill: var(--blood); } }
+.upload { display: grid; gap: .5rem; margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+.upload h2 { font-size: 1.05rem; margin: 0; }
+.upload label { font-size: .85rem; font-weight: 500; }
+.upload input[type=file] { font: inherit; max-width: 100%; }
+.upload .button { justify-self: start; margin-top: .4rem; }
 .docket { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
 .docket-head { display: flex; align-items: center; gap: .75rem; padding: .85rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
 .docket-head input { flex: 1 1 14rem; }

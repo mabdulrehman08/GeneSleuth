@@ -88,6 +88,61 @@ function displayFunnel(session) {
   }));
 }
 
+function openSession(session) {
+  state.session = session;
+  displayFunnel(session);
+  byId("build-time").textContent = `Built in ${session.build_seconds.toFixed(1)} s`;
+  byId("letter").src = session.letter_url;
+  byId("letter-link").href = session.letter_url;
+  byId("case-note").textContent = !session.uploaded
+    ? "The planted variant is one of the suspects below. Nothing here says which."
+    : session.mode === "fallback"
+      ? "This is a prepared demo genome, not your upload. Nothing is revealed for it."
+      : "Your uploaded genome, filtered to rare variants in the 58 epilepsy panel genes. There is no hidden answer.";
+  byId("reveal-button").hidden = Boolean(session.uploaded);
+  byId("case").hidden = false;
+  byId("picker").hidden = true;
+}
+
+async function uploadCase(event) {
+  event.preventDefault();
+  const vcf = byId("vcf-file").files[0];
+  const pdf = byId("pdf-file").files[0];
+  if (!vcf || !pdf || byId("upload-submit").disabled) return;
+  const version = ++state.version;
+  byId("upload-submit").disabled = true;
+  byId("random").disabled = true;
+  byId("picker").setAttribute("aria-busy", "true");
+  notify("Reading your variant file and filtering to rare panel variants. This can take up to a minute…");
+  try {
+    const form = new FormData();
+    form.append("vcf", vcf);
+    form.append("referral_pdf", pdf);
+    const response = await fetch("/api/cases/upload", { method: "POST", body: form });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(typeof error.detail === "string" ? error.detail : `Upload failed (${response.status}).`);
+    }
+    const session = await response.json();
+    if (version !== state.version) return;
+    openSession(session);
+    if (session.mode === "fallback") {
+      notify(`Using a prepared demo genome because: ${session.reason || "the upload could not be processed"}`, true);
+    } else {
+      notify();
+    }
+    focusSection("case-title");
+  } catch (error) {
+    if (version === state.version) notify(error.message, true);
+  } finally {
+    if (version === state.version) {
+      byId("upload-submit").disabled = false;
+      byId("random").disabled = false;
+      byId("picker").removeAttribute("aria-busy");
+    }
+  }
+}
+
 async function build(optionId) {
   if (byId("random").disabled) return;
   const version = ++state.version;
@@ -97,13 +152,7 @@ async function build(optionId) {
   try {
     const session = await api("/api/cases", { option_id: optionId });
     if (version !== state.version) return;
-    state.session = session;
-    displayFunnel(session);
-    byId("build-time").textContent = `Built in ${session.build_seconds.toFixed(1)} s`;
-    byId("letter").src = session.letter_url;
-    byId("letter-link").href = session.letter_url;
-    byId("case").hidden = false;
-    byId("picker").hidden = true;
+    openSession(session);
     notify();
     focusSection("case-title");
   } catch (error) {
@@ -589,6 +638,7 @@ function reset() {
   state.followup = false;
   for (const id of ["case", "investigation", "results", "reveal", "top-locus", "hidden-locus"]) byId(id).hidden = true;
   for (const id of ["random", "investigate", "reveal-button"]) byId(id).disabled = false;
+  byId("reveal-button").hidden = false;
   byId("investigate").hidden = false;
   byId("picker").hidden = false;
   byId("picker").removeAttribute("aria-busy");
@@ -601,6 +651,7 @@ function reset() {
 
 byId("search").addEventListener("input", displayOptions);
 byId("random").addEventListener("click", () => build(null));
+byId("upload-form").addEventListener("submit", uploadCase);
 byId("investigate").addEventListener("click", investigate);
 byId("reveal-button").addEventListener("click", reveal);
 byId("reset").addEventListener("click", reset);

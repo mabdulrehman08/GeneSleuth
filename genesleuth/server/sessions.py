@@ -102,13 +102,14 @@ class Session:
     """Keep the answer key and investigation state on the server."""
 
     case: Case
-    truth: CaseTruth
+    truth: CaseTruth | None  # None for uploaded cases: nothing is hidden, so Reveal does not apply
     build_seconds: float
     runs: list[Run] = field(default_factory=list)
     initial_result: InvestigationResult | None = None
     result: InvestigationResult | None = None
     plots: dict[str, Plot] = field(default_factory=dict)
     revealed: bool = False
+    info: dict = field(default_factory=dict)  # upload mode, reason and timing for uploaded cases
 
     def begin(self) -> Run:
         """Create a numbered stream without discarding previous runs."""

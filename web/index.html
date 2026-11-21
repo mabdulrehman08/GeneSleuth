@@ -33,6 +33,15 @@
       <div class="picker-intro">
         <h1 id="picker-title" tabindex="-1">Find the hidden variant.</h1>
         <p class="lede">A public disease variant is planted in a real genome. The investigator sees only the referral letter and the filtered candidate list. The answer stays on the server until you reveal it.</p>
+        <form id="upload-form" class="upload" aria-labelledby="upload-title">
+          <h2 id="upload-title">Or bring your own case</h2>
+          <p class="small">Upload a patient variant file (VCF, GRCh38, .vcf or .vcf.gz) and the referral letter (PDF, scanned or typed). If the files cannot be used, the page says so and uses a prepared demo genome instead.</p>
+          <label for="vcf-file">Variant file</label>
+          <input id="vcf-file" type="file" accept=".vcf,.gz,.vcf.gz" required>
+          <label for="pdf-file">Referral letter</label>
+          <input id="pdf-file" type="file" accept="application/pdf,.pdf" required>
+          <button id="upload-submit" class="button primary" type="submit">Investigate my case</button>
+        </form>
       </div>
       <div class="docket">
         <div class="docket-head">
@@ -80,7 +89,7 @@
     <section id="case" class="dossier" aria-labelledby="case-title" hidden>
       <div class="dossier-facts">
         <h2 id="case-title" tabindex="-1">Case prepared</h2>
-        <p class="dossier-note">The planted variant is one of the suspects below. Nothing here says which.</p>
+        <p id="case-note" class="dossier-note">The planted variant is one of the suspects below. Nothing here says which.</p>
         <ol id="funnel" class="funnel" aria-label="Candidate funnel"></ol>
         <p id="build-time" class="small"></p>
         <div class="actions">

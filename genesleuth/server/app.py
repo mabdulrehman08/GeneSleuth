@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -33,6 +33,9 @@ BUILD_TIMEOUT = 20
 INVESTIGATION_TIMEOUT = 200
 PLOT_TIMEOUT = 40
 ALPHAGENOME_BUDGET = 25
+UPLOAD_TIMEOUT = 75
+MAX_VCF_BYTES = 200 * 1024 * 1024
+MAX_PDF_BYTES = 15 * 1024 * 1024
 
 
 class CaseRequest(BaseModel):
@@ -175,7 +178,8 @@ def create_app(*, dev: bool = False) -> FastAPI:
 
         started_at = time.monotonic()
         try:
-            holdout = await asyncio.to_thread(case_api(dev=dev).holdout_for, session.truth)
+            holdout = (await asyncio.to_thread(case_api(dev=dev).holdout_for, session.truth)
+                       if session.truth is not None else set())
             if followup is None:
                 from genesleuth.agent.api import investigate
 
@@ -286,6 +290,54 @@ def create_app(*, dev: bool = False) -> FastAPI:
             "alphagenome_budget": ALPHAGENOME_BUDGET,
         }
 
+    async def save_upload(upload: UploadFile, destination: Path, limit: int) -> None:
+        """Stream one upload to disk, refusing anything over the size limit."""
+        size = 0
+        with destination.open("wb") as output:
+            while chunk := await upload.read(1024 * 1024):
+                size += len(chunk)
+                if size > limit:
+                    raise HTTPException(413, f"{upload.filename or 'File'} is larger than {limit // (1024 * 1024)} MB.")
+                output.write(chunk)
+        if size == 0:
+            raise HTTPException(422, f"{upload.filename or 'File'} is empty.")
+
+    @service.post("/api/cases/upload", status_code=201)
+    async def upload_case(vcf: UploadFile = File(...), referral_pdf: UploadFile = File(...)):
+        """Build a case from the doctor's own VCF and referral letter, or fall back loudly."""
+        started_at = time.monotonic()
+        directory = CACHE_DIR / "uploads_tmp" / secrets.token_hex(8)
+        directory.mkdir(parents=True, exist_ok=True)
+        pdf_path = directory / "referral.pdf"
+        raw_path = directory / "upload.bin"
+        await save_upload(vcf, raw_path, MAX_VCF_BYTES)
+        await save_upload(referral_pdf, pdf_path, MAX_PDF_BYTES)
+        with raw_path.open("rb") as handle:
+            gzipped = handle.read(2) == b"\x1f\x8b"
+        vcf_path = raw_path.rename(directory / ("upload.vcf.gz" if gzipped else "upload.vcf"))
+        try:
+            def prepare():
+                """Run the upload pipeline in a worker; it never raises and reports its mode."""
+                return case_api(dev=dev).build_case_from_upload(str(vcf_path), str(pdf_path))
+
+            case, info = await asyncio.wait_for(asyncio.to_thread(prepare), timeout=UPLOAD_TIMEOUT)
+        except TimeoutError:
+            raise HTTPException(504, f"Processing the upload exceeded {UPLOAD_TIMEOUT} seconds.") from None
+        except Exception as error:
+            logger.warning("Upload build failed (%s)", type(error).__name__)
+            raise HTTPException(503, "Upload processing failed. Check the data bundle.") from None
+        case_id = case.case_id
+        if not re.fullmatch(r"[a-zA-Z0-9_-]{1,100}", case_id) or not Path(case.referral_pdf).is_file():
+            raise HTTPException(500, "The data package returned an invalid uploaded case.")
+        elapsed = time.monotonic() - started_at
+        sessions[case_id] = Session(case, None, elapsed, info=info)
+        return {
+            "case_id": case_id, "funnel": case.funnel, "n_suspects": len(case.suspects),
+            "letter_url": f"/api/cases/{case_id}/letter", "build_seconds": elapsed,
+            "alphagenome_budget": ALPHAGENOME_BUDGET, "uploaded": True,
+            "mode": info.get("mode", "uploaded"), "reason": info.get("reason", ""),
+        }
+
     @service.get("/api/cases/{case_id}/letter")
     async def letter(case_id: str):
         """Serve the referral PDF inline under a neutral filename."""
@@ -385,6 +437,8 @@ def create_app(*, dev: bool = False) -> FastAPI:
     async def reveal(case_id: str):
         """Reveal and score the original completed shortlist against the hidden variant."""
         session = session_for(case_id)
+        if session.truth is None:
+            raise HTTPException(409, "Uploaded cases have no hidden variant to reveal.")
         completed(session)
         original = session.initial_result
         if original is None:
@@ -405,6 +459,8 @@ def create_app(*, dev: bool = False) -> FastAPI:
         session = session_for(case_id)
         result = completed(session)
         if target == "hidden":
+            if session.truth is None:
+                raise HTTPException(409, "Uploaded cases have no hidden variant.")
             if not session.revealed:
                 raise HTTPException(409, "Reveal the case before requesting its plot.")
             return plot_for(session, session.truth.hidden_variant_id).public()
