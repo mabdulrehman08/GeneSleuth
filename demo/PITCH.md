@@ -1,38 +1,42 @@
-# GeneSleuth live pitch
+# GeneSleuth live pitch (3 minutes + 2 minutes of Q&A)
+
+The live run takes about 2.5 to 3 minutes. So the judge picks, you press Investigate immediately, and you narrate the run as it streams. Do not wait for the run before you start talking. Have a recorded run ready in case the venue connection fails, and label it "recorded run".
 
 ## 0:00–0:20 · The wrong tissue
 
-“A child with severe epilepsy went through genome sequencing and two rounds of blood RNA testing without a clear explanation. The clue was a deep intronic change in DNM1, near a brain-specific exon. The blood tests looked in a tissue where that exon barely showed up. A model let researchers look in a different tissue.” [Source, Fig. 3](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome/alphagenome-atlas.pdf)
+“A child with severe epilepsy had genome sequencing and two rounds of blood RNA testing and still had no answer. The clue was a deep intronic change in DNM1 near a brain-specific exon. The blood tests looked in a tissue where that exon barely shows up. A model let researchers look in the right one.” [Source, Fig. 3](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome/alphagenome-atlas.pdf)
 
-## 0:20–0:45 · Make it a case
+Say clearly: DNM1 is the story, not our proof.
 
-“Pick any variant, or hit Random. GeneSleuth places a public disease-associated variant in a real 1000 Genomes background. The investigator gets a synthetic referral letter and the filtered variant list.”
+## 0:20–0:40 · The judge picks, and we start
 
-Click Investigate as soon as the case loads. Point to the PDF and the actual funnel counts. Explain that the referral describes symptoms and the answer stays on the server until Reveal.
+“Pick any variant, or press Random. We plant that real disease variant into a real genome, and the investigator gets a referral letter, sometimes a scan, plus a list of about 280 rare variants. The answer stays on the server.”
 
-## 0:45–2:05 · Watch the investigation
+Press **Investigate** the moment the case loads. Point to the letter and to the real funnel counts (about 12,900 variants in the epilepsy genes, 282 suspects).
 
-“Carbon reads the referral as a PDF and turns symptoms into structured phenotypes and an investigation plan. Decision 1 screens the candidate list in one batch and suggests a tissue. Neon decides which variants and tissues to spend live AlphaGenome calls on. Hydrogen condenses the raw outputs in parallel.”
+## 0:40–2:30 · Watch the investigation (narrate while it runs)
 
-Show a real tool call and its effect on the call counter. Open an actual checker rejection if one appears and read the reason. If all claims pass, open a supported claim and point to its cited tool result. Describe Managed Agents as the hosted sandbox only if the active run used it.
+“Carbon reads the letter and turns it into phenotypes and a plan. Decision 1 triages all 282 suspects in about two seconds. Neon chooses which variants and which tissues deserve a live AlphaGenome call. Hydrogen condenses each raw AlphaGenome output. Every claim must cite a real tool result, and a second Decision 1 pass checks the claims against that evidence.”
 
-“AlphaGenome predicts an effect for a variant and tissue we select. GeneSleuth makes those selections under a budget and combines them with phenotype fit and population frequency. A second Decision 1 pass checks each claim against its cited evidence.”
+Point to the AlphaGenome-calls counter and to one real tool call. Open a real checker rejection if one appears and read the reason; if none appears, open a supported claim and its cited result. Do not mention Managed Agents: the submitted run uses the local Neon loop.
 
-## 2:05–2:35 · Reveal and review
+“AlphaGenome scores one variant in one tissue per call. Choosing which of 282 variants to check, and where, is the hard part.”
 
-Use Reveal and read the actual rank, including a miss if the variant fell outside the shortlist. If the plot is ready, point out the reference and alternate tracks, then describe the difference actually shown in brain and blood.
+## 2:30–2:50 · Reveal and review
 
-Open one candidate’s evidence. Show Accept or Reject and the Look again control. Explain that a reviewer can ask a tissue-specific question in the same investigation and export accepted evidence with citations.
+Press **Reveal** and read the actual rank, including a miss if the variant fell outside the top 10. Point to the reference and alternate tracks in brain and in blood. Show Accept, Reject and “Look again”: the geneticist stays in control and can send the agent back to a specific tissue.
 
-## 2:35–3:00 · What the benchmark says
+## 2:50–3:00 · The honest proof
 
-Open the benchmark. State the test-set size and one observed difference against AlphaGenome Atlas (AG1), with uncertainty. If results are pending, say so. Present DNM1 as the motivating story and MFSD8 as a recent published holdout candidate. The PLA2G6 example illustrates how a rarity filter can discard a variant implicated in a compound-heterozygous case. [MFSD8 report](https://doi.org/10.3389/fgene.2026.1980180) · [PLA2G6 preprint](https://doi.org/10.64898/2026.06.10.26355004)
+“On a held-out test of twenty cases, simple baselines like AlphaGenome alone or a fixed recipe did as well or better than the agent, and nine of our runs timed out. What GeneSleuth adds is a checked evidence trail for every claim. The full numbers and failures are in the repo.”
 
 ## Q&A
 
 | Question | Answer |
 | --- | --- |
-| Isn't this just AlphaGenome? | Atlas AVI is a strong baseline. The full system can weigh phenotype and frequency, choose a smaller set of variant–tissue pairs to score live, and show which evidence supports each claim. The benchmark measures whether that adds value. |
-| Could Gemini memorize ClinVar? | The lookup is disabled and the answer key is held server-side. Prior knowledge can still enter through pretrained models. Report only the cutoff split, publication check, and coordinate-shuffle controls the benchmark actually ran. |
-| Why should a geneticist trust it? | The shortlist exposes tool-call citations and checker verdicts. Reviewers can inspect those predictions and the case context, change their decisions, and request another test. |
-| What if the cause is outside the panel? | It cannot rank a variant that never reached the candidate list. Panel and frequency filter misses belong in the evaluation. |
+| Isn't this just AlphaGenome? | On our spike-in test AlphaGenome alone is a strong baseline, and we say so. GeneSleuth adds phenotype from the letter, a call budget, tissue choice and a checker that rejects unsupported claims. We have not shown it ranks better. |
+| Does it beat the baselines? | No, not on this test. Nine of twenty runs hit the time limit. The eleven that finished all had the variant in the top 10, ten of them first, but that subset is selected by finishing. The test is also easy: the planted variants are mostly splice or non-coding and the background has almost none. Twenty cases is small. |
+| Could Gemini have memorized ClinVar? | ClinVar lookup is off during every run and the answer key stays server-side. Pretrained knowledge can still leak in, which is why DNM1 is never in the test set. Gemini with no tools reached 85%, so we think the letter plus a 58-gene panel nearly identifies the gene. |
+| Why should a geneticist trust it? | Every claim cites a tool result and passes a checker. The reviewer accepts or rejects each candidate, can send the agent back to a tissue, and exports the evidence. |
+| What if the cause isn't in the panel? | It cannot rank a variant that never reached the candidate list. Two named cases we wanted to test (MFSD8, PLA2G6) are outside our 58 genes, so they are untested. |
+| What did you build today? | All code and data files in the repo, built on Nov 21. The research briefs are planning documents from Nov 19. |

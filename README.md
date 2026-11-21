@@ -10,11 +10,14 @@ Many families remain without a diagnosis after genetic testing. Protein-coding s
 
 ## Built today at the Gemini 4 NYC Hackathon (Nov 21, 2026)
 
-The Nov 19 research briefs were written before the event. Project code was written during the event. The project has three parts.
+The five research briefs in `docs/research/` are planning documents written on Nov 19, before the event. All code in this repository, and all data files generated from public sources, were written or produced on Nov 21. Nothing was copied from an earlier project. Everything below was built during the event, by component.
 
-- Data preparation, public variant case construction and benchmark scoring.
-- Referral extraction, candidate triage, tissue routing, adaptive tool calls and claim verification.
-- A live browser investigation with PDF review, an evidence timeline, a tissue comparison, reveal, and Markdown export. See the [design](Design.md) for boundaries and [B2 status](STATUS_B2.md) for current verification.
+- **Data (`genesleuth/data`, `scripts/data_*.py`, `assets/`):** streaming of the 1000 Genomes NA12878 background for 58 epilepsy genes, a gnomAD v4.1 rarity filter (12,923 variants in the panel regions, 282 suspects after the filter and the planted variant), MANE-based region annotation, case construction that plants a real ClinVar variant, and a committed 21 MB data bundle with a one-command setup check.
+- **Lookups (`genesleuth/lookups`):** region context, population frequency, gene and phenotype lookups, HPO matching and a ClinVar lookup that is switched off during every run.
+- **Cases and letters (`genesleuth/data/letters.py`):** 126 synthetic referral letters written by Gemini 4 Hydrogen from sampled HPO terms, rendered as PDFs, many as noisy scans. A regex check rejects any letter that names the gene, the variant or the condition.
+- **Agent (`genesleuth/agent`, `genesleuth/checker`, `genesleuth/*_client.py`):** Carbon reads the letter, Decision 1 triages 282 suspects in about two seconds and fact-checks claims, Neon investigates with native tool calls and live AlphaGenome calls, and Hydrogen condenses each AlphaGenome result.
+- **Benchmark (`bench/`):** five arms, hit@k with 95% Wilson intervals, failure categories, three leakage controls and a report generator.
+- **Demo (`genesleuth/server`, `web/`):** a browser app with a case picker, referral PDF, live evidence timeline, human review, reveal, plots and a Markdown evidence export. See the [design](Design.md).
 
 ## How it works
 
@@ -40,7 +43,7 @@ flowchart TD
 | Gemini 4 Neon | Investigates, chooses variant–tissue pairs, ranks candidates, and revises rejected claims. |
 | Gemini 4 Carbon | Reads the referral PDF, extracts HPO phenotypes, and writes a hypothesis plan. |
 | Gemini 4 Hydrogen | Summarizes AlphaGenome outputs in parallel worker calls. |
-| Gemini Managed Agents | Provides the hosted sandbox when enabled and verified. The demo runtime comes from the active investigation trace. |
+| Gemini Managed Agents | Not used in the submitted run. The investigator is a local Neon tool loop (`USE_MANAGED_AGENT=0`); a Managed Agents path exists behind that flag but was not verified live. |
 | AlphaGenome | Atlas (AG1) supplies precomputed AVI scores. Live calls supply tissue-specific effects and reference-versus-alternate tracks. |
 
 ## Isn't this just one AI reading AlphaGenome's output?
@@ -59,7 +62,27 @@ The benchmark design places public ClinVar variants into a public 1000 Genomes b
 | Fixed recipe | Fixed weights for phenotype fit, variant-effect score, consequence severity, and held-out gene-level ClinVar evidence |
 | Full GeneSleuth | Decision 1 routing, adaptive Neon investigation, and checked evidence |
 
-Measured test-set results and the chart are pending integration. The published DNM1 story is excluded from proof because it may be familiar to the model. MFSD8 c.999-556C>G is a recent published holdout candidate. Its eligibility depends on the confirmed coordinate and cutoff checks. The PLA2G6 c.2034+355G>A preprint illustrates a filter failure mode. The allele can be relatively common in one ancestry group and was implicated alongside a second allele, so a strict rarity filter can discard it. [MFSD8 report](https://doi.org/10.3389/fgene.2026.1980180) · [PLA2G6 preprint](https://doi.org/10.64898/2026.06.10.26355004)
+### Results on the held-out test set (20 cases, run once)
+
+The planted variant ranked in the top k of each arm's list. Rank 11 or worse, or a failed run, counts as a miss. Intervals are 95% Wilson intervals. Full tables, the chart and every failure are in [`bench/results/test/report.md`](bench/results/test/report.md) and [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+
+| Arm | hit@1 | hit@5 | hit@10 |
+| --- | --- | --- | --- |
+| Gemini 4, no tools | 85% (17/20) [64-95] | 85% (17/20) [64-95] | 85% (17/20) [64-95] |
+| AlphaGenome 2, fixed brain condition | 80% (16/20) [58-92] | 80% (16/20) [58-92] | 85% (17/20) [64-95] |
+| Fixed recipe, no LLM | 55% (11/20) [34-74] | 80% (16/20) [58-92] | 90% (18/20) [70-97] |
+| **GeneSleuth, full agent** | **50% (10/20) [30-70]** | **55% (11/20) [34-74]** | **55% (11/20) [34-74]** |
+| AlphaGenome Atlas (AG1) only | 0% (0/20) | 0% (0/20) | 0% (0/20) |
+
+**On this benchmark the full agent did not beat the simple baselines.** We report that as measured.
+
+- **Nine of the twenty full-agent runs hit the demo time limit** and returned no shortlist; they count as misses. The eleven runs that finished all placed the hidden variant in the top 10, and ten placed it first. That subset is selected by finishing, so it is not a fair comparison with the other arms. It does show the main weakness is latency, not ranking.
+- **The Atlas arm scored 0% because the Atlas returned no scores** for our variants (its metadata exposed no AVI scorer). That row says nothing about the Atlas itself and is not a valid comparison.
+- **The benchmark is easier than real life.** Most planted variants are splice or non-coding, and the background genome contains almost no such variants, so a live AlphaGenome score alone finds them (94% of non-coding cases in the top five). The referral letter plus a 58-gene panel nearly identifies the gene, which explains Gemini-only at 85%.
+- **Twenty cases is small.** The intervals overlap for most pairs of arms.
+- **What GeneSleuth adds is the evidence trail, not a measured accuracy gain:** tissue-specific AlphaGenome tracks, tool-call citations on every claim, and a claim checker that rejected 82 of 316 claims in the test run. The benchmark does not measure how useful that is to a geneticist.
+
+The DNM1 case is the motivating story. It is a ClinVar variant of uncertain significance and it may be familiar to the model, so it is a demo option and is never part of the test set. We planned two more named cases, MFSD8 c.999-556C>G (a recent publication) and PLA2G6 c.2034+355G>A (a possible rarity-filter failure). Both genes are outside our 58-gene panel, so we could not build cases for them and they are untested. [MFSD8 report](https://doi.org/10.3389/fgene.2026.1980180) · [PLA2G6 preprint](https://doi.org/10.64898/2026.06.10.26355004)
 
 ## Run the demo
 
@@ -98,7 +121,7 @@ These data were generated at the New York Genome Center with funds provided by N
 
 ## Limitations
 
-A candidate must survive the panel and frequency filters to be ranked. A synthetic referral can be cleaner than a real referral, and a planted single variant does not capture every inheritance pattern. Tissue models predict molecular effects with uneven tissue coverage. Claim verification tests consistency with the available evidence. Model outages, quota, and latency can limit how many candidates are scored.
+A live investigation takes about 2.5 to 3 minutes, and nine of twenty test runs timed out at the demo budget. The Atlas pre-ranking returned no scores, so the agent works without it. The input is a synthetic referral letter and a planted variant in one real genome (NA12878); uploading a patient's own genome is not part of the demo. A candidate must survive the panel and frequency filters to be ranked. A synthetic referral can be cleaner than a real referral, and a planted single variant does not capture every inheritance pattern. Tissue models predict molecular effects with uneven tissue coverage. Claim verification tests consistency with the available evidence. Model outages, quota, and latency can limit how many candidates are scored.
 
 ## Team
 
