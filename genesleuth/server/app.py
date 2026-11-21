@@ -333,9 +333,13 @@ def create_app(*, dev: bool = False) -> FastAPI:
         """Save the reviewer's decision for a current ranked candidate."""
         session = session_for(case_id)
         result = completed(session)
-        if action.variant_id not in {item.variant.variant_id for item in result.ranked}:
+        candidate = next((item for item in result.ranked if item.variant.variant_id == action.variant_id), None)
+        if candidate is None:
             raise HTTPException(404, "That candidate is outside the current shortlist.")
-        history = record_action(case_id, action.model_dump())
+        entry = action.model_dump()
+        if action.action == "accept":
+            entry["candidate"] = candidate.model_dump(mode="json")
+        history = record_action(case_id, entry)
         return {"review": current_decisions(history)}
 
     @service.post("/api/cases/{case_id}/look-again", status_code=202)

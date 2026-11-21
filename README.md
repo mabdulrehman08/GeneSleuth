@@ -10,7 +10,11 @@ Many families remain without a diagnosis after genetic testing. Protein-coding s
 
 ## Built today at the Gemini 4 NYC Hackathon (Nov 21, 2026)
 
-The Nov 19 research briefs were written before the event. Project code is written during the event. The build is organized into the data and benchmark, investigator and claim checker, and live demo and review workflow. See the [design](Design.md) for boundaries and [B2 status](STATUS_B2.md) for current verification.
+The Nov 19 research briefs were written before the event. Project code was written during the event. The project has three parts.
+
+- Data preparation, public variant case construction and benchmark scoring.
+- Referral extraction, candidate triage, tissue routing, adaptive tool calls and claim verification.
+- A live browser investigation with PDF review, an evidence timeline, a tissue comparison, reveal, and Markdown export. See the [design](Design.md) for boundaries and [B2 status](STATUS_B2.md) for current verification.
 
 ## How it works
 
@@ -87,4 +91,4 @@ A candidate must survive the panel and frequency filters to be ranked. A synthet
 
 ## Team
 
-Built at the Gemini 4 NYC Hackathon. Team and repository credits are listed in the submission.
+Haider Gilani and Muhammad Abdulrehman.

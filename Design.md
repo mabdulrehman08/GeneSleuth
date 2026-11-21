@@ -1,6 +1,6 @@
 # GeneSleuth design
 
-This document specifies the planned live demo and reviewer workflow. See the [agent design](docs/DESIGN_AGENT.md), [data design](docs/DESIGN_DATA.md), and [benchmark](docs/BENCHMARK.md) for their respective components.
+This document describes the live demo and reviewer workflow. See the [agent design](docs/DESIGN_AGENT.md), [data design](docs/DESIGN_DATA.md), and [benchmark](docs/BENCHMARK.md) for their respective components.
 
 ## Case lifecycle
 
@@ -24,11 +24,11 @@ The interface is plain HTML, JavaScript and CSS. FastAPI serves the pages and ma
 
 The picker searches by gene, region and condition and supports random selection. It displays the referral alongside the funnel. The timeline uses model and tool events with elapsed times, call counts, checker verdicts and runtime fallbacks. Cost comes from run-level investigator telemetry when provided. Candidate details connect checked claims to their evidence. The plot compares reference and alternate tracks in brain and blood. A shortlist miss remains visible after reveal.
 
-Build and investigation have separate elapsed timers. The demo targets 15 seconds to build and 100 seconds to investigate. The investigator owns model deadlines, budget enforcement, retries and fallback. The server owns stream completion, replay, and visible failure states. A delayed plot cannot delay revealing the rank.
+Build and investigation have separate elapsed timers. The demo targets 15 seconds to build and 100 seconds to investigate. The investigator owns model deadlines, budget enforcement, retries and fallback. The server owns stream completion, replay, and visible failure states. The API returns the original rank immediately and the browser polls for the plot. Follow-up results never change the original reveal rank.
 
 ## Review and storage
 
-Accept and Reject are reviewer decisions, keyed by variant ID. Follow-up requests keep the same investigator session and use its existing evidence. Review history is written to `GENESLEUTH_DATA_DIR/reviews/<case_id>.json`. The Markdown export includes current accepted entries and only claims marked supported, with the cited call IDs and review decisions.
+Accept and Reject are reviewer decisions, keyed by variant ID. Follow-up requests keep the same investigator session and use its existing evidence. Review history is written to `GENESLEUTH_DATA_DIR/reviews/<case_id>.json`. The Markdown export preserves the supported evidence shown when a reviewer accepted a candidate, even if a follow-up changes the ranking. It includes cited call IDs and the history of review decisions.
 
 The case session, plot handles and live trace are scoped to the demo server process. The review log and provider caches live on disk. The server requires `--dev` for fake mode. The demo check requires live mode and delegates provider calls to the shared clients or investigator.
 

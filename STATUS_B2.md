@@ -1,6 +1,6 @@
 # B2 demo and docs
 
-Updated 2026-11-21 13:40:33 EST
+Updated 2026-11-21 13:44:37 EST
 
 ## Done
 
@@ -13,13 +13,13 @@ Updated 2026-11-21 13:40:33 EST
 
 ## In progress
 
-- Browser rehearsal at desktop and phone widths.
-- Verify real-case timings and instrument fields against the released A and B1 packages.
+- Verify real-case timings against the released data and run the timed browser rehearsal. B1's current trace formats for triage, claims, budgets, cost, and fallback match the demo view.
 
 ## Blocked
 
-- The B2 shell cannot resolve GitHub. Remote main now exists with Side A's work. The B1 environment has both key settings and the provider SDKs installed.
-- Side A's real data bundle and held-out test artifacts are still pending. The B2 sandbox also blocks binding a local HTTP port, so the real local-browser rehearsal must run in a terminal with localhost access.
+- The B2 shell cannot resolve GitHub. GitHub's connected write attempt rejected tree creation with HTTP 403. Remote main now has Side A's work. The B1 environment has both key settings and the provider SDKs installed.
+- Side A has pushed panel, ClinVar, and HPO assets. The remaining case and background inputs, setup script, and held-out test results are pending.
+- The B2 sandbox denied local port binding, and offline Chromium launch aborted. FastAPI and static frontend checks passed. Browser rehearsal requires a terminal with localhost access.
 
 ## NEEDS FROM B1
 
@@ -30,5 +30,5 @@ Updated 2026-11-21 13:40:33 EST
 
 - Coordinate Side A's `assets/` and `scripts/data_setup.py` delivery, then run the build and rehearsal in the integrated checkout.
 - Run the live demo with B1's existing ignored `.env` or fill the B2 checkout's ignored `.env` if launching from B2. Use one shared absolute data directory. B2 currently uses `/tmp/genesleuth-data`.
-- If the shell push continues to fail, push the B2 changes from a network-enabled terminal after bringing the Side A and B1 commits together. Do not force-push.
+- From the B2 checkout and a network-enabled terminal, run `git fetch origin`, then `git rebase --onto origin/main 1b1c6cd main` to replay B2 changes onto Side A's shared contract. Verify `.env` is ignored and untracked, then run `git push -u origin main`.
 - Record and submit manually using `SUBMISSION_CHECKLIST.md`.

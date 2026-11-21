@@ -76,7 +76,7 @@ function displayFunnel(session) {
   const funnel = session.funnel;
   const stages = [
     ["Variants in panel regions", funnel.variants_in_panel_regions],
-    ["Rare variants", funnel.rare ?? funnel.rare_af_lt_0_001 ?? funnel["rare_af_lt_0.001"] ?? funnel["rare_af_lt_0.01"]],
+    ["Rare variants", funnel.rare ?? funnel["rare_af_lt_0.001"] ?? funnel["rare_af_lt_0.01"]],
     ["Suspects for investigation", session.n_suspects],
   ].filter(([, value]) => Number.isFinite(value));
   const largest = Math.max(1, ...stages.map(([, value]) => value));
@@ -164,9 +164,13 @@ function beginRun(run, followup) {
     const before = timeline.scrollHeight - timeline.scrollTop - timeline.clientHeight < 56;
     if (event.step === "revise") revision = true;
     const label = actors.find(([key]) => actor.includes(key))?.[1];
-    const row = node("li", undefined, rejected || event.step === "error" ? "rejected" : revised ? "revised" : "");
-    const summary = node("div", event.summary);
-    if (data.reason && data.reason !== event.summary) summary.append(node("span", data.reason, "reason"));
+    const failed = rejected || event.step === "error";
+    const emphasis = failed ? "rejected" : revised ? "revised" : data.fallback_to ? "fallback" : "";
+    const row = node("li", undefined, emphasis);
+    const detail = event.step === "check" && data.text ? data.text : event.summary;
+    const summary = node("div", detail);
+    const reason = data.reason || data.error;
+    if (typeof reason === "string" && reason !== detail) summary.append(node("span", reason, "reason"));
     row.append(node("time", `+${Number(event.t).toFixed(1)}s`), node("span", event.actor, `actor ${label || ""}`), summary);
     if (revised && rejectedRows.has(data.variant_id)) {
       rejectedRows.get(data.variant_id).after(row);
@@ -415,7 +419,7 @@ async function reveal() {
     const { truth, rank, n_suspects: suspects } = result;
     state.revealedVariant = truth.hidden_variant_id;
     byId("reveal-title").textContent = rank ? `Hidden variant ranked #${rank} of ${suspects} suspects` :
-      result.passed_filter ? "Hidden variant missed the shortlist" : "Hidden variant did not pass the filter";
+      result.passed_filter ? `Hidden variant was outside the top 10 of ${suspects} suspects` : "Hidden variant did not pass the filter";
     byId("reveal-detail").textContent = `${truth.gene} · ${truth.condition} · ${truth.hidden_variant_id}`;
     byId("reveal").hidden = false;
     highlight();

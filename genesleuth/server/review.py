@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from genesleuth.config import DATA_DIR
-from genesleuth.schemas import InvestigationResult
+from genesleuth.schemas import InvestigationResult, RankedSuspect
 
 
 def read_actions(case_id: str) -> list[dict]:
@@ -63,7 +63,11 @@ def evidence_report(result: InvestigationResult, actions: list[dict]) -> str:
     decisions = current_decisions(actions)
     ledger = {call.call_id: call for call in result.tool_calls}
     lines = ["# GeneSleuth evidence report", "", f"Case {result.case_id}", "", "## Accepted candidates", ""]
-    accepted = [item for item in result.ranked if decisions.get(item.variant.variant_id) == "accept"]
+    candidates = {item.variant.variant_id: item for item in result.ranked}
+    for action in actions:
+        if action["action"] == "accept" and "candidate" in action:
+            candidates[action["variant_id"]] = RankedSuspect.model_validate(action["candidate"])
+    accepted = [item for variant_id, item in candidates.items() if decisions.get(variant_id) == "accept"]
     if not accepted:
         lines.extend(["No candidates accepted for this shortlist.", ""])
     for item in accepted:

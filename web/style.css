@@ -79,6 +79,8 @@ input, textarea { width: 100%; background: #fff; color: var(--ink); border: 1px 
 .actor.decisions { color: #803703; background: #fce9cb; }
 .timeline .rejected { color: #7f1c29; background: #fff0f2; }
 .timeline .revised { color: var(--green); background: #e7f5ed; }
+.timeline .fallback { color: #703c0b; background: #fff3db; }
+.button[aria-pressed="true"] { border-color: var(--primary); background: #e5f2ec; color: var(--primary); }
 .timeline .reason { display: block; margin-top: .18rem; font-size: .81rem; }
 .trace-footer { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: .55rem; color: var(--muted); font-size: .77rem; }
 .trace-footer output { color: var(--ink); font-weight: 700; }
