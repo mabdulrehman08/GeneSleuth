@@ -128,6 +128,9 @@ def population_frequency(variant_id: str) -> dict:
 
 _FAKE_CLINVAR = {
     "chr2-165991234-A-G": {"significance": "Pathogenic", "conditions": ["Dravet syndrome"], "review_status": "criteria provided, single submitter", "stars": 1},
+    "chr2-166037775-C-A": {"significance": "Pathogenic", "conditions": ["Severe myoclonic epilepsy in infancy"], "review_status": "criteria provided, multiple submitters, no conflicts", "stars": 2},
+    "chr20-63413582-C-T": {"significance": "Pathogenic", "conditions": ["Early-infantile DEE"], "review_status": "criteria provided, single submitter", "stars": 1},
+    "chr16-2048755-T-C": {"significance": "Pathogenic", "conditions": ["Tuberous sclerosis 2"], "review_status": "criteria provided, multiple submitters, no conflicts", "stars": 2},
     "chr9-128225994-G-A": {"significance": "Pathogenic", "conditions": ["Developmental and epileptic encephalopathy 31"], "review_status": "criteria provided, single submitter", "stars": 1},
 }
 
