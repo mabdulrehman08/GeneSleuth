@@ -2,6 +2,12 @@
 
 An AI detective that helps geneticists find the hidden cause of unsolved genetic disease.
 
+## Watch it run
+
+**[Watch one real run at 2x speed (2 minutes)](demo/recordings/live_demo_run_2026-11-21_2x.mp4)** · [same run in real time (3 min 54 s)](demo/recordings/live_demo_run_2026-11-21.mp4)
+
+A screen recording of the app, one real run, unedited apart from the speed-up: Random case, the referral letter and funnel (12,924 variants in the panel regions, 282 suspects), the live investigation (12 AlphaGenome calls, 20 claims checked), then Reveal: the hidden variant ranked #1 of 282 and its AlphaGenome tracks in brain and blood. The investigation took 171 seconds in real time. The recording has a low frame rate and no sound.
+
 A child with epileptic encephalopathy had two rounds of blood RNA sequencing with ambiguous results. A deep intronic DNM1 variant affected an exon used in brain-specific transcripts. AlphaGenome predicted an effect in glutamatergic neurons and little corresponding signal in venous blood. Splice predictors can flag a variant. The tissue comparison helps explain why the blood tests were inconclusive. This published case motivates GeneSleuth and is excluded from the evidence for generalization. [AlphaGenome Atlas paper, Fig. 3](https://storage.googleapis.com/deepmind-media/DeepMind.com/Blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome/alphagenome-atlas.pdf)
 
 ## The problem
