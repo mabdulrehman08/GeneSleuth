@@ -55,6 +55,8 @@ def list_split_options(split: str) -> list[str]:
     p = _find("splits.json")
     if p is not None:
         data = json.loads(p.read_text(encoding="utf-8"))
+        if split == "named" and isinstance(data, dict):  # items tagged "named" in any list (DNM1 anchor, MFSD8, PLA2G6)
+            return _ids(x for k, v in data.items() if isinstance(v, list) for x in v if isinstance(x, dict) and x.get("named"))
         if isinstance(data, dict) and split in data:
             return _ids(data[split])
     raise SystemExit(f"no split '{split}' found: A3's splits.json / genesleuth.data.splits is not available yet")

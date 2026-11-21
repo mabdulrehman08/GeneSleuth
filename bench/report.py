@@ -315,7 +315,7 @@ def _controls_section(split_dir: Path) -> list[str]:
     if c.get("citation"):
         x = c["citation"]
         out += [f"- **Citation control (gemini_only names a publication for its top pick):** {x.get('n_correct', 'n/a')} of "
-                f"{x.get('n_asked', 'n/a')} correct ({x.get('note', '')}). A correct citation counts as memorization."]
+                f"{x.get('n_asked', 'n/a')} correct ({x.get('n_with_pmid', 'n/a')} gave a PMID; {x.get('note', '')}). A correct citation counts as memorization."]
     if c.get("shuffle"):
         x = c["shuffle"]
         out += [f"- **Coordinate-shuffle control (gemini_only, {x.get('n', 'n/a')} cases):** true gene still ranked first in "

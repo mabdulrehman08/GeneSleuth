@@ -135,7 +135,7 @@ def load_split(split_dir: Path) -> dict[str, list[CaseRecord]]:
     if not split_dir.exists():
         return out
     for mode_dir in sorted(p for p in split_dir.iterdir() if p.is_dir()):
-        if mode_dir.name in ("logs", "cases"):
+        if mode_dir.name in ("logs", "cases", "controls"):
             continue
         recs = [load_record(f, mode_dir.name) for f in sorted(mode_dir.glob("*.json"))]
         if recs:
