@@ -12,11 +12,9 @@ Writes (DATA_DIR = genesleuth.config.DATA_DIR):
                              (phenotype.hpoa, aspect P, rows with qualifier NOT dropped)
   work/hpo_gene_disease.tsv  gene <tab> disease_id <tab> disease_name   (extra, used by gene_phenotypes)
 
-Use: python scripts/data_hpo.py [--force] [--skip-download]
-License / attribution (verified from the HPO site and repository, see docs/DATA_SOURCES.md): HPO data is free to use
-under the HPO license (https://hpo.jax.org/license) with attribution to the Human Phenotype Ontology
-(Gargano et al., Nucleic Acids Res 2024) and the release version used; the repository states it is distributed
-under a custom open license (CC-BY-4.0-style attribution). Keep this note with any redistributed derivative.
+Also writes ROOT/assets/<table>.gz copies (the committed bundle read first by the lookups).
+Use: python scripts/data_hpo.py [--force] [--skip-download] [--no-bundle]
+License / attribution: see docs/DATA_SOURCES.md (HPO license text and required citation are recorded there).
 """
 from __future__ import annotations
 
@@ -31,7 +29,11 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from genesleuth.lookups._common import raw_dir, work_dir, write_atomic  # noqa: E402
+import gzip  # noqa: E402
+
+from genesleuth.lookups._common import assets_dir, find_table, raw_dir, work_dir, write_atomic  # noqa: E402
+
+TABLES = ["hpo_terms.json", "hpo_gene.tsv", "hpo_disease.tsv", "hpo_gene_disease.tsv", "hpo_alt_ids.json"]
 
 BASE = "https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/"
 FILES = ["hp.obo", "hp.json", "genes_to_phenotype.txt", "phenotype.hpoa"]
@@ -65,7 +67,7 @@ def record_release() -> None:
         print("[warn] could not record release tag:", e)
 
 
-def parse_obo(path: Path) -> dict:
+def parse_obo(path: Path) -> tuple[dict, dict]:
     """Parse hp.obo into {hpo_id: {label, synonyms, parents}}; obsolete terms are skipped, alt_ids point to the main term."""
     terms: dict[str, dict] = {}
     alts: dict[str, str] = {}
@@ -158,16 +160,37 @@ def build_tables() -> dict:
     return counts
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--force", action="store_true", help="re-download even if present")
+def bundle() -> list[str]:
+    """Copy the work tables gzip-compressed to ROOT/assets/ (committed bundle, ~6 MB total); returns written names."""
+    out = []
+    for name in TABLES:
+        src = work_dir() / name
+        if not src.exists():
+            continue
+        dst = assets_dir() / (name + ".gz")
+        write_atomic(dst, gzip.compress(src.read_bytes(), compresslevel=9, mtime=0))
+        out.append(dst.name)
+    print("[bundle]", out)
+    return out
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Idempotent entry point (also called by scripts/data_setup.py): skip when tables exist in assets/ or work/."""
+    ap = argparse.ArgumentParser(description=__doc__.split(chr(10))[0])
+    ap.add_argument("--force", action="store_true", help="re-download and rebuild")
     ap.add_argument("--skip-download", action="store_true")
-    a = ap.parse_args()
+    ap.add_argument("--no-bundle", action="store_true", help="do not write ROOT/assets/*.gz")
+    a = ap.parse_args(argv)
+    if not a.force and all(find_table(t) for t in TABLES):
+        print("[skip] HPO tables already present (assets/ or DATA_DIR/work)")
+        return
     if not a.skip_download:
         for f in FILES:
             download(f, a.force)
         record_release()
     build_tables()
+    if not a.no_bundle:
+        bundle()
 
 
 if __name__ == "__main__":

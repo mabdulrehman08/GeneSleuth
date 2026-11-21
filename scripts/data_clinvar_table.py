@@ -17,7 +17,8 @@ Output columns (tab separated, gzip, with header):
 Regions: DATA_DIR/work/panel_regions.tsv (written by slice A1) if present, otherwise the 58-gene list of
 docs/research/03-data.md section 5 with MANE v1.5 coordinates +/- 10 kb (fallback; see --regions-fallback).
 
-Use: python scripts/data_clinvar_table.py [--force] [--wait-regions SECONDS]
+Also copies the table to ROOT/assets/clinvar_panel.tsv.gz (committed bundle).
+Use: python scripts/data_clinvar_table.py [--force] [--wait-regions SECONDS] [--no-bundle]
 """
 from __future__ import annotations
 
@@ -35,7 +36,7 @@ from urllib.parse import unquote
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from genesleuth.lookups._common import raw_dir, work_dir, write_atomic  # noqa: E402
+from genesleuth.lookups._common import assets_dir, find_table, raw_dir, work_dir, write_atomic  # noqa: E402
 
 CLINVAR_URL = "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
 MANE_URL = "https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.summary.txt.gz"
@@ -201,14 +202,29 @@ def build(vcf: Path, regions) -> int:
     return n
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+def bundle() -> None:
+    """Copy work/clinvar_panel.tsv.gz to ROOT/assets/ (already gzip; ~3 MB) so the other computer can use it."""
+    src = work_dir() / "clinvar_panel.tsv.gz"
+    if src.exists():
+        write_atomic(assets_dir() / "clinvar_panel.tsv.gz", src.read_bytes())
+        print("[bundle] assets/clinvar_panel.tsv.gz")
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Idempotent entry point (also called by scripts/data_setup.py): skip when the table exists in assets/ or work/."""
+    ap = argparse.ArgumentParser(description=__doc__.split(chr(10))[0])
     ap.add_argument("--force", action="store_true", help="re-download and rebuild")
     ap.add_argument("--wait-regions", type=int, default=0, help="seconds to poll for work/panel_regions.tsv before using the MANE fallback")
-    a = ap.parse_args()
+    ap.add_argument("--no-bundle", action="store_true", help="do not copy into ROOT/assets/")
+    a = ap.parse_args(argv)
+    if not a.force and find_table("clinvar_panel.tsv.gz"):
+        print("[skip] clinvar_panel.tsv.gz already present (assets/ or DATA_DIR/work)")
+        return
     vcf = ensure_clinvar(a.force)
     regions = load_regions(a.wait_regions)
     build(vcf, regions)
+    if not a.no_bundle:
+        bundle()
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ data scripts (several slices share DATA_DIR, so partial files must never be visi
 from __future__ import annotations
 
 import functools
+import gzip
 import hashlib
 import json
 import os
@@ -41,6 +42,31 @@ def work_dir() -> Path:
     d = data_dir() / "work"
     d.mkdir(parents=True, exist_ok=True)
     return d
+
+
+def assets_dir() -> Path:
+    """Committed bundle folder ROOT/assets (read first so the other computer works without DATA_DIR)."""
+    return Path(config.ROOT) / "assets"
+
+
+def find_table(base: str) -> Path | None:
+    """Locate a table by its plain name (e.g. 'hpo_gene.tsv'): assets/ first, then DATA_DIR/work; .gz variants accepted."""
+    for d in (assets_dir(), data_dir() / "work"):
+        for name in (base + ".gz", base):
+            p = d / name
+            if p.exists() and p.stat().st_size > 0:
+                return p
+    if base.endswith(".gz"):
+        return find_table(base[:-3]) if not base[:-3].endswith(".gz") else None
+    return None
+
+
+def open_text(path: Path):
+    """Open a table as UTF-8 text, transparently handling .gz."""
+    path = Path(path)
+    if path.suffix == ".gz":
+        return gzip.open(path, "rt", encoding="utf-8")
+    return open(path, encoding="utf-8")
 
 
 def cache_dir(namespace: str) -> Path:
