@@ -15,9 +15,9 @@ def test_wilson_known_values():
     lo, hi = wilson_ci(10, 10)
     assert hi == pytest.approx(1.0, abs=1e-9) and lo == pytest.approx(0.7225, abs=1e-3)
     assert wilson_ci(0, 0) == (0.0, 1.0)
-    # n = 30, 15 successes: classic half-width about 0.17
+    # n = 30, 15 successes: half-width 0.1685
     lo, hi = wilson_ci(15, 30)
-    assert (hi - lo) / 2 == pytest.approx(0.1717, abs=2e-3)
+    assert (hi - lo) / 2 == pytest.approx(0.1685, abs=1e-3)
 
 
 def _make(tmp_path):
