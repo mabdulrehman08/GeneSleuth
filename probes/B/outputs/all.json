@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-21",
+  "results": [
+    {
+      "probe": "gemini.models",
+      "seconds": 0.004,
+      "status": "error",
+      "error_type": "ConnectError"
+    },
+    {
+      "probe": "gemini.gemini-4-carbon",
+      "seconds": 0.211,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "gemini.gemini-4-neon",
+      "seconds": 0.007,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "gemini.gemini-4-hydrogen",
+      "seconds": 0.005,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "gemini.pdf",
+      "seconds": 0.054,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "gemini.scanned_pdf",
+      "seconds": 0.073,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "gemini.function_round_trip",
+      "seconds": 0.004,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "decisions.text",
+      "seconds": 0.004,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "decisions.png",
+      "seconds": 0.003,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "managed.function_round_trip",
+      "seconds": 0.004,
+      "status": "error",
+      "error_type": "APIConnectionError"
+    },
+    {
+      "probe": "alphagenome",
+      "status": "blocked",
+      "error_type": "FutureTimeoutError"
+    }
+  ]
+}
