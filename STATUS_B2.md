@@ -1,6 +1,6 @@
 # B2 demo and docs
 
-Updated 2026-11-21 13:57:35 EST
+Updated 2026-11-21 14:09:41 EST
 
 ## Done
 
@@ -21,9 +21,9 @@ Updated 2026-11-21 13:57:35 EST
 
 ## Blocked
 
-- The B2 shell cannot resolve GitHub. The collaborator's Terminal push worked. The connected GitHub app rejected the write with HTTP 403.
-- B1's investigator is implemented locally and awaiting integration on GitHub main. Its local Gemini probes failed to connect, and AlphaGenome timed out. Both keys are configured in B1's ignored environment.
-- Side A's setup found 66 missing PDFs across DEV, TEST and DEMO in the current snapshot. Prepared demo options load normally. The held-out report and chart remain pending.
+- The B2 shell cannot resolve GitHub. The previous collaborator Terminal push worked. The connected GitHub app rejected the follow-up with HTTP 403, and Chrome's upload form did not accept the staged folders from Finder.
+- B1's investigator and real-case check are on GitHub main. The integrated preflight passed key presence and real PDF setup. Decisions and Carbon returned SDK APIConnectionError, and AlphaGenome condition metadata timed out from this workspace.
+- Side A's setup found 66 missing PDFs across DEV, TEST and DEMO in the current snapshot. The real-case data test also found that option 280045 (ALDH7A1) has a PDF but no bundled truth phenotypes. Twelve other targeted data and benchmark tests passed, with one skipped. Side A owns the missing letter metadata. The held-out report and chart remain pending.
 - The B2 sandbox denied local port binding, and offline Chromium launch aborted. FastAPI and static frontend checks passed. Browser rehearsal requires a terminal with localhost access.
 
 ## NEEDS FROM B1
@@ -33,7 +33,7 @@ Updated 2026-11-21 13:57:35 EST
 
 ## HUMAN TO DO
 
-- After B1 is on main, run `python scripts/data_setup.py --check-only` and `python -m scripts.demo_check` from a network-enabled terminal in the integrated checkout. Rehearse three real cases if the live checks pass.
+- Run `python -m scripts.demo_check` from a network-enabled terminal in the integrated checkout. Rehearse three real cases if the live checks pass.
 - Run the live demo with B1's existing ignored `.env` or fill the B2 checkout's ignored `.env` if launching from B2. Use one shared absolute data directory. B2 currently uses `/tmp/genesleuth-data`.
 - If shell DNS remains blocked, push the B2 integration follow-up from the B2 checkout in the network-enabled Terminal. The B2 branch already tracks origin/main.
 - Record and submit manually using `SUBMISSION_CHECKLIST.md`.
