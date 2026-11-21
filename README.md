@@ -71,16 +71,18 @@ The planted variant ranked in the top k of each arm's list. Rank 11 or worse, or
 | Gemini 4, no tools | 85% (17/20) [64-95] | 85% (17/20) [64-95] | 85% (17/20) [64-95] |
 | AlphaGenome 2, fixed brain condition | 80% (16/20) [58-92] | 80% (16/20) [58-92] | 85% (17/20) [64-95] |
 | Fixed recipe, no LLM | 55% (11/20) [34-74] | 80% (16/20) [58-92] | 90% (18/20) [70-97] |
-| **GeneSleuth, full agent** | **50% (10/20) [30-70]** | **55% (11/20) [34-74]** | **55% (11/20) [34-74]** |
+| GeneSleuth, full agent, **first run** (demo time budget; 9 timeouts count as misses) | 50% (10/20) [30-70] | 55% (11/20) [34-74] | 55% (11/20) [34-74] |
+| GeneSleuth, full agent, **after rerunning the 9 timed-out cases** with the longer time budget | 75% (15/20) [53-89] | 85% (17/20) [64-95] | 90% (18/20) [70-97] |
 | AlphaGenome Atlas (AG1) only | 0% (0/20) | 0% (0/20) | 0% (0/20) |
 
-**On this benchmark the full agent did not beat the simple baselines.** We report that as measured.
+**The full agent matches the strongest baselines on this benchmark. It does not beat them.** We report both full-agent rows on purpose.
 
-- **Nine of the twenty full-agent runs hit the demo time limit** and returned no shortlist; they count as misses. The eleven runs that finished all placed the hidden variant in the top 10, and ten placed it first. That subset is selected by finishing, so it is not a fair comparison with the other arms. It does show the main weakness is latency, not ranking.
+- **First run:** nine of the twenty full-agent runs hit the demo time limit (about 135 s) and returned no shortlist, so they count as misses. All nine were the same failure.
+- **Rerun:** we reran only those nine cases, once, with the longer benchmark time budget, as the protocol written before the test allowed for crashes. Seven of the nine ranked the hidden variant in the top 10 (five first), one was not in the top 10, and one timed out again. **Those reruns took 290 to 384 seconds each, so this is not demo speed.** The live demo budget is shorter and, at that speed, nine of twenty runs did not finish.
+- **No arm clearly wins.** With twenty cases the intervals overlap for every pair of the top arms. The fixed recipe and the full agent both reach 90% at hit@10, and Gemini with no tools reaches 85% at every rank.
 - **The Atlas arm scored 0% because the Atlas returned no scores** for our variants (its metadata exposed no AVI scorer). That row says nothing about the Atlas itself and is not a valid comparison.
 - **The benchmark is easier than real life.** Most planted variants are splice or non-coding, and the background genome contains almost no such variants, so a live AlphaGenome score alone finds them (94% of non-coding cases in the top five). The referral letter plus a 58-gene panel nearly identifies the gene, which explains Gemini-only at 85%.
-- **Twenty cases is small.** The intervals overlap for most pairs of arms.
-- **What GeneSleuth adds is the evidence trail, not a measured accuracy gain:** tissue-specific AlphaGenome tracks, tool-call citations on every claim, and a claim checker that rejected 82 of 316 claims in the test run. The benchmark does not measure how useful that is to a geneticist.
+- **What GeneSleuth adds is the evidence trail, not a measured accuracy gain:** tissue-specific AlphaGenome tracks, tool-call citations on every claim, and a claim checker that rejected 169 of 791 claims across the rerun cases. The benchmark does not measure how useful that is to a geneticist.
 
 The DNM1 case is the motivating story. It is a ClinVar variant of uncertain significance and it may be familiar to the model, so it is a demo option and is never part of the test set. We planned two more named cases, MFSD8 c.999-556C>G (a recent publication) and PLA2G6 c.2034+355G>A (a possible rarity-filter failure). Both genes are outside our 58-gene panel, so we could not build cases for them and they are untested. [MFSD8 report](https://doi.org/10.3389/fgene.2026.1980180) · [PLA2G6 preprint](https://doi.org/10.64898/2026.06.10.26355004)
 
@@ -121,7 +123,7 @@ These data were generated at the New York Genome Center with funds provided by N
 
 ## Limitations
 
-A live investigation takes about 2.5 to 3 minutes, and nine of twenty test runs timed out at the demo budget. The Atlas pre-ranking returned no scores, so the agent works without it. The input is a synthetic referral letter and a planted variant in one real genome (NA12878); uploading a patient's own genome is not part of the demo. A candidate must survive the panel and frequency filters to be ranked. A synthetic referral can be cleaner than a real referral, and a planted single variant does not capture every inheritance pattern. Tissue models predict molecular effects with uneven tissue coverage. Claim verification tests consistency with the available evidence. Model outages, quota, and latency can limit how many candidates are scored.
+A live investigation takes about 2.5 to 3 minutes, and at that speed nine of twenty test runs did not finish; the longer benchmark budget took 5 to 6 minutes per case. The Atlas pre-ranking returned no scores, so the agent works without it. The input is a synthetic referral letter and a planted variant in one real genome (NA12878); uploading a patient's own genome is not part of the demo. A candidate must survive the panel and frequency filters to be ranked. A synthetic referral can be cleaner than a real referral, and a planted single variant does not capture every inheritance pattern. Tissue models predict molecular effects with uneven tissue coverage. Claim verification tests consistency with the available evidence. Model outages, quota, and latency can limit how many candidates are scored.
 
 ## Team
 

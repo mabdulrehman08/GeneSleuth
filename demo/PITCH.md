@@ -28,14 +28,14 @@ Press **Reveal** and read the actual rank, including a miss if the variant fell 
 
 ## 2:50–3:00 · The honest proof
 
-“On a held-out test of twenty cases, simple baselines like AlphaGenome alone or a fixed recipe did as well or better than the agent, and nine of our runs timed out. What GeneSleuth adds is a checked evidence trail for every claim. The full numbers and failures are in the repo.”
+“On a held-out test of twenty cases, our agent matched the best simple baselines, AlphaGenome alone and a fixed recipe, but did not beat them. With a longer time budget it ranked the hidden variant in the top five in 85% of cases. At demo speed nine of twenty runs did not finish. What GeneSleuth adds is a checked evidence trail for every claim. The full numbers and failures are in the repo.”
 
 ## Q&A
 
 | Question | Answer |
 | --- | --- |
-| Isn't this just AlphaGenome? | On our spike-in test AlphaGenome alone is a strong baseline, and we say so. GeneSleuth adds phenotype from the letter, a call budget, tissue choice and a checker that rejects unsupported claims. We have not shown it ranks better. |
-| Does it beat the baselines? | No, not on this test. Nine of twenty runs hit the time limit. The eleven that finished all had the variant in the top 10, ten of them first, but that subset is selected by finishing. The test is also easy: the planted variants are mostly splice or non-coding and the background has almost none. Twenty cases is small. |
+| Isn't this just AlphaGenome? | On our spike-in test AlphaGenome alone is a strong baseline (80% in the top five, against 85% for the full agent), and we say so. GeneSleuth adds phenotype from the letter, a call budget, tissue choice and a checker that rejects unsupported claims. We have not shown it ranks better. |
+| Does it beat the baselines? | No. It matches them. First run: 55% in the top five, because nine of twenty runs hit the demo time limit. After we reran only those nine with a longer budget (5 to 6 minutes each, not demo speed): 85% in the top five and 90% in the top ten, the same as the fixed recipe and about the same as Gemini with no tools. The test is also easy: the planted variants are mostly splice or non-coding and the background has almost none. Twenty cases is small and the intervals overlap. |
 | Could Gemini have memorized ClinVar? | ClinVar lookup is off during every run and the answer key stays server-side. Pretrained knowledge can still leak in, which is why DNM1 is never in the test set. Gemini with no tools reached 85%, so we think the letter plus a 58-gene panel nearly identifies the gene. |
 | Why should a geneticist trust it? | Every claim cites a tool result and passes a checker. The reviewer accepts or rejects each candidate, can send the agent back to a tissue, and exports the evidence. |
 | What if the cause isn't in the panel? | It cannot rank a variant that never reached the candidate list. Two named cases we wanted to test (MFSD8, PLA2G6) are outside our 58 genes, so they are untested. |
