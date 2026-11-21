@@ -53,9 +53,8 @@ function displayOptions() {
   const rows = matches.map((option) => {
     const row = node("button", undefined, "option");
     row.type = "button";
-    row.append(node("strong", option.gene), node("span", option.region, "region muted"),
-      node("span", option.condition || option.label), node("span", "→", "pick-arrow"));
-    row.lastChild.setAttribute("aria-hidden", "true");
+    row.append(node("strong", option.gene), node("span", option.condition || option.label, "condition"),
+      node("span", option.region, "region"));
     row.addEventListener("click", () => build(option.option_id));
     return row;
   });
@@ -82,8 +81,9 @@ function displayFunnel(session) {
   const largest = Math.max(1, ...stages.map(([, value]) => value));
   byId("funnel").replaceChildren(...stages.map(([name, value]) => {
     const item = node("li");
-    item.style.setProperty("--width", `${Math.max(3, value / largest * 100)}%`);
-    item.append(node("strong", count.format(value)), node("span", name));
+    const bar = node("div", undefined, "bar");
+    bar.style.setProperty("--width", `${Math.max(2, Math.sqrt(value / largest) * 100)}%`);
+    item.append(node("strong", count.format(value)), node("span", name), bar);
     return item;
   }));
 }
@@ -166,12 +166,12 @@ function beginRun(run, followup) {
     const label = actors.find(([key]) => actor.includes(key))?.[1];
     const failed = rejected || event.step === "error";
     const emphasis = failed ? "rejected" : revised ? "revised" : data.fallback_to ? "fallback" : "";
-    const row = node("li", undefined, emphasis);
+    const row = node("li", undefined, [emphasis, label || ""].join(" ").trim());
     const detail = event.step === "check" && data.text ? data.text : event.summary;
     const summary = node("div", detail);
     const reason = data.reason || data.error;
     if (typeof reason === "string" && reason !== detail) summary.append(node("span", reason, "reason"));
-    row.append(node("time", `+${Number(event.t).toFixed(1)}s`), node("span", event.actor, `actor ${label || ""}`), summary);
+    row.append(node("time", `${Number(event.t).toFixed(1)} s`), node("span", event.actor, `actor ${label || ""}`), summary);
     if (revised && rejectedRows.has(data.variant_id)) {
       rejectedRows.get(data.variant_id).after(row);
       rejectedRows.delete(data.variant_id);
@@ -225,6 +225,7 @@ function beginRun(run, followup) {
     byId("results").inert = false;
     byId("connection").textContent = "Investigation interrupted";
     byId("investigate").disabled = followup;
+    byId("investigate").hidden = followup;
     notify(JSON.parse(message.data).message, true);
   });
 }
@@ -239,7 +240,10 @@ async function investigate() {
   notify();
   try {
     const { run } = await api(casePath("investigate"), {});
-    if (version === state.version) beginRun(run, false);
+    if (version === state.version) {
+      byId("investigate").hidden = true;
+      beginRun(run, false);
+    }
   } catch (error) {
     if (version === state.version) {
       byId("investigate").disabled = false;
@@ -261,7 +265,7 @@ function evidence(item, ledger) {
     const verdict = verdicts.get(claim.claim_id);
     const supported = verdict?.verdict === "supported";
     const line = node("li", undefined, supported ? "supported" : "dropped");
-    line.append(node(supported ? "span" : "s", `${supported ? "✓ " : ""}${claim.text}`));
+    line.append(node(supported ? "span" : "s", claim.text));
     if (claim.cited_call_ids.length) {
       const refs = node("details");
       refs.append(node("summary", `Evidence ${claim.cited_call_ids.join(", ")}`));
@@ -323,24 +327,33 @@ function showResults(result) {
       tissueNames.set(call.result.tissue, call.result.tissue_name);
     }
   }
-  byId("result-time").textContent = `Case ${result.build_seconds.toFixed(1)} s · Investigation ${result.investigation_seconds.toFixed(1)} s`;
+  byId("result-time").textContent = `Case built in ${result.build_seconds.toFixed(1)} s, investigated in ${result.investigation_seconds.toFixed(1)} s`;
   byId("phenotypes").replaceChildren(...result.phenotypes.map((phenotype) => {
     const chip = node("span", phenotype.label, "phenotype");
     chip.title = [phenotype.hpo_id, phenotype.source_quote].filter(Boolean).join(" · ");
     return chip;
   }));
   const rows = [];
+  const topScore = Math.max(0, ...result.ranked.map((item) => Number.isFinite(item.score) ? item.score : 0));
   for (const item of result.ranked) {
     const variant = item.variant;
-    const row = node("tr");
+    const tissueName = tissueNames.get(item.tissue) || item.tissue || "";
+    const row = node("tr", undefined, `${item.rank === 1 ? "top " : ""}${tissueKind(tissueName)}`);
     row.dataset.variant = variant.variant_id;
     const gene = node("td");
-    gene.append(node("strong", variant.gene || "—"), node("small", variant.variant_id, "variant-id"));
-    row.append(node("td", String(item.rank)), gene, node("td", variant.region),
-      node("td", (variant.consequence || "—").replaceAll("_", " ")),
-      node("td", Number.isFinite(item.score) ? item.score.toFixed(3) : "—"),
-      node("td", tissueNames.get(item.tissue) || item.tissue || "—"));
-    const button = node("button", "Details +", "evidence-button");
+    gene.append(node("span", variant.gene || "—", "gene"), node("small", variant.variant_id, "variant-id"));
+    const score = node("td");
+    const scoreWrap = node("div", undefined, "score");
+    const bar = node("div", undefined, "bar");
+    if (Number.isFinite(item.score) && topScore > 0) bar.style.setProperty("--pct", `${Math.max(2, item.score / topScore * 100)}%`);
+    scoreWrap.append(node("span", Number.isFinite(item.score) ? item.score.toFixed(3) : "—"), bar);
+    score.append(scoreWrap);
+    const tissue = node("td");
+    tissue.append(node("span", tissueName || "—", tissueName ? "tissue" : ""));
+    row.append(node("td", String(item.rank), "rank"), gene, node("td", variant.region),
+      node("td", (variant.consequence || "—").replaceAll("_", " "), "consequence"), score, tissue);
+    const button = node("button", undefined, "evidence-button");
+    button.append(node("span", "Evidence"));
     button.type = "button";
     const detailsRow = node("tr", undefined, "evidence-row");
     detailsRow.id = `evidence-${item.rank}`;
@@ -355,7 +368,6 @@ function showResults(result) {
     button.addEventListener("click", () => {
       detailsRow.hidden = !detailsRow.hidden;
       button.setAttribute("aria-expanded", String(!detailsRow.hidden));
-      button.textContent = detailsRow.hidden ? "Details +" : "Details −";
     });
     const cell = node("td");
     cell.append(button);
@@ -366,9 +378,84 @@ function showResults(result) {
   byId("download").href = casePath("report");
   byId("results").hidden = false;
   byId("top-plot").hidden = !result.ranked.length;
-  if (result.ranked.length) showPlot("top", byId("top-plot"), "Top candidate · Brain and blood");
+  if (result.ranked.length) {
+    showLocus("top", byId("top-locus"), "The top candidate");
+    showPlot("top", byId("top-plot"), "Top candidate in brain and blood");
+  }
   highlight();
   focusSection("ranking-title");
+}
+
+function tissueKind(name) {
+  const text = String(name).toLowerCase();
+  if (/brain|cortex|cereb|hippocamp|neuron|neural|glia|caudate|putamen|amygdala|hypothalam|spinal/.test(text)) return "brain";
+  if (/blood|leukocyte|lymph|monocyte|neutrophil|erythro|plasma|t cell|b cell/.test(text)) return "blood";
+  return text ? "other" : "";
+}
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+function svg(tag, attrs = {}, text) {
+  const element = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs)) element.setAttribute(key, value);
+  if (text !== undefined) element.textContent = text;
+  return element;
+}
+
+function drawLocus(container, locus, title) {
+  const W = 960, H = 196, left = 64, right = 24;
+  const span = Math.max(1, locus.end - locus.start);
+  const x = (pos) => left + (pos - locus.start) / span * (W - left - right);
+  const root = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  root.append(svg("title", {}, `${locus.gene} locus with the candidate variant and predicted effect in brain and blood.`));
+  const tracks = [["brain", "Brain", locus.tracks.brain], ["blood", "Blood", locus.tracks.blood]];
+  const peak = Math.max(1e-6, ...tracks.flatMap(([, , values]) => values.map(Math.abs)));
+  tracks.forEach(([key, label, values], index) => {
+    const base = 54 + index * 52;
+    const height = 40;
+    const step = (W - left - right) / Math.max(1, values.length - 1);
+    const points = values.map((value, i) => `${(left + i * step).toFixed(1)},${(base - Math.abs(value) / peak * height).toFixed(1)}`);
+    root.append(svg("path", { class: `track ${key}`, d: `M${left},${base} L${points.join(" L")} L${W - right},${base} Z` }));
+    root.append(svg("line", { class: "baseline", x1: left, x2: W - right, y1: base, y2: base }));
+    root.append(svg("text", { class: "track-label", x: left - 10, y: base - 4, "text-anchor": "end" }, label));
+  });
+  const geneY = 150;
+  root.append(svg("line", { class: "intron", x1: x(locus.start), x2: x(locus.end), y1: geneY, y2: geneY }));
+  for (const exon of locus.exons) {
+    const width = Math.max(3, x(exon.end) - x(exon.start));
+    root.append(svg("rect", { class: exon.brain_specific ? "exon brain-specific" : "exon", x: x(exon.start), y: geneY - 9, width, height: 18, rx: 1.5 }));
+  }
+  const needle = x(locus.variant_pos);
+  root.append(svg("line", { class: "needle", x1: needle, x2: needle, y1: 22, y2: geneY + 18 }));
+  root.append(svg("circle", { class: "needle-head", cx: needle, cy: 22, r: 4 }));
+  const anchor = needle > W - 200 ? "end" : needle < 200 ? "start" : "middle";
+  root.append(svg("text", { class: "needle-label", x: needle, y: 14, "text-anchor": anchor }, locus.variant_id));
+  root.append(svg("text", { class: "gene-label", x: left, y: geneY + 36 }, `${locus.gene}, ${locus.strand === "-" ? "read right to left" : "read left to right"}`));
+  const specific = locus.exons.find((exon) => exon.brain_specific);
+  if (specific) {
+    root.append(svg("text", { class: "exon-label", x: x((specific.start + specific.end) / 2), y: geneY + 36, "text-anchor": "middle" }, "brain-specific exon"));
+  }
+  root.append(svg("text", { class: "scale", x: W - right, y: geneY + 36, "text-anchor": "end" }, `${count.format(span)} bases shown`));
+  container.replaceChildren(node("h3", `${title} sits here in ${locus.gene}`), root);
+  const caption = node("figcaption");
+  const brainPeak = Math.max(...locus.tracks.brain.map(Math.abs));
+  const bloodPeak = Math.max(...locus.tracks.blood.map(Math.abs));
+  caption.textContent = locus.caption || (brainPeak > 3 * bloodPeak ?
+    `${locus.gene}: the predicted effect shows in brain and barely in blood, which is why a blood test could miss it.` :
+    `${locus.gene}: predicted effect in brain and blood near the variant.`);
+  container.append(caption);
+  container.hidden = false;
+}
+
+async function showLocus(target, container, title) {
+  const version = state.version;
+  container.hidden = true;
+  try {
+    const locus = await api(casePath(`locus?target=${target}`));
+    if (version !== state.version || !locus?.exons?.length || !locus.tracks) return;
+    drawLocus(container, locus, title);
+  } catch {
+    // The locus view is optional; the ranking and plots stand on their own.
+  }
 }
 
 function highlight() {
@@ -420,11 +507,13 @@ async function reveal() {
     state.revealedVariant = truth.hidden_variant_id;
     byId("reveal-title").textContent = rank ? `Hidden variant ranked #${rank} of ${suspects} suspects` :
       result.passed_filter ? `Hidden variant was outside the top 10 of ${suspects} suspects` : "Hidden variant did not pass the filter";
-    byId("reveal-detail").textContent = `${truth.gene} · ${truth.condition} · ${truth.hidden_variant_id}`;
+    byId("reveal-detail").replaceChildren(node("span", truth.gene, "gene"), node("span", truth.condition),
+      node("span", truth.hidden_variant_id, "mono"));
     byId("reveal").hidden = false;
     highlight();
     focusSection("reveal-title");
-    showPlot("hidden", byId("hidden-plot"), "Hidden variant · Brain and blood", result.plot);
+    if (rank !== 1) showLocus("hidden", byId("hidden-locus"), "The hidden variant");
+    showPlot("hidden", byId("hidden-plot"), "Hidden variant in brain and blood", result.plot);
   } catch (error) {
     if (version === state.version) {
       notify(error.message, true);
@@ -460,7 +549,7 @@ function searchTissues() {
 
 function openReview(variant) {
   state.reviewVariant = variant.variant_id;
-  byId("look-variant").textContent = `${variant.gene || "Variant"} · ${variant.variant_id}`;
+  byId("look-variant").textContent = `${variant.gene || "Variant"} — ${variant.variant_id}`;
   byId("tissue").value = "";
   byId("question").value = "";
   byId("look-message").textContent = "";
@@ -498,8 +587,9 @@ function reset() {
   state.dropped.clear();
   state.revealedVariant = null;
   state.followup = false;
-  for (const id of ["case", "investigation", "results", "reveal"]) byId(id).hidden = true;
+  for (const id of ["case", "investigation", "results", "reveal", "top-locus", "hidden-locus"]) byId(id).hidden = true;
   for (const id of ["random", "investigate", "reveal-button"]) byId(id).disabled = false;
+  byId("investigate").hidden = false;
   byId("picker").hidden = false;
   byId("picker").removeAttribute("aria-busy");
   byId("results").inert = false;
@@ -522,3 +612,8 @@ document.addEventListener("keydown", (event) => {
       !byId("look-dialog").open && !event.target.closest("input, textarea, [contenteditable]")) reset();
 });
 loadOptions();
+const swap = document.querySelector(".swap");
+if (swap) {
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(() => { swap.textContent = "A"; }, reduced ? 0 : 1200);
+}

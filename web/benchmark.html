@@ -3,24 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GeneSleuth · Benchmark</title>
+  <title>GeneSleuth — Benchmark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css">
   <script type="module" src="/static/benchmark.js"></script>
 </head>
 <body>
   <header class="masthead">
-    <div class="masthead-inner">
-      <a href="/" class="brand">Gene<span>Sleuth</span></a>
-      <nav aria-label="Project pages"><a href="/">Live investigation</a></nav>
-    </div>
+    <a href="/" class="brand" aria-label="GeneSleuth home">
+      <svg class="mark" viewBox="0 0 28 20" aria-hidden="true" focusable="false">
+        <path d="M1 15 C5 15 6 5 10 5 S14 15 18 15 20 9 22 9 24 12 27 12" class="mark-brain"/>
+        <path d="M1 7 C6 7 7 11 12 11 S16 6 20 6 22 10 27 10" class="mark-blood"/>
+      </svg>
+      GeneSleuth
+    </a>
+    <nav aria-label="Project pages">
+      <a href="/">Live investigation</a>
+      <a href="https://github.com/mabdulrehman08/gemini4_nyc_hacks" target="_blank" rel="noopener">Source</a>
+    </nav>
   </header>
-  <main class="workspace">
-    <div class="hero">
-      <h1>Held-out benchmark</h1>
-      <p>How often does the hidden variant reach the shortlist?</p>
+  <main class="workspace benchmark-page">
+    <div>
+      <h1>How often does the hidden variant reach the shortlist?</h1>
+      <p class="lede">Public ClinVar variants planted in a 1000 Genomes background, scored by five arms on the same candidate list. Hit rates carry 95% Wilson intervals.</p>
     </div>
-    <section class="surface" aria-label="Test-set results">
-      <p id="benchmark-status" role="status">Loading test-set results…</p>
+    <section aria-label="Test-set results">
+      <p id="benchmark-status" class="small" role="status">Loading test-set results.</p>
       <figure id="benchmark-figure" class="plot" hidden>
         <img id="benchmark-chart" alt="Held-out hit rates by benchmark arm with confidence intervals" loading="lazy">
       </figure>

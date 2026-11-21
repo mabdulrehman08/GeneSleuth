@@ -53,7 +53,7 @@ async function benchmark() {
     if (!response.ok) throw new Error("Benchmark results are unavailable.");
     const data = await response.json();
     if (data.status === "pending") {
-      status.textContent = "Held-out test results have not been published yet.";
+      status.textContent = "Held-out test results have not been published yet. Check back after the DEV and TEST runs finish.";
       return;
     }
     status.hidden = true;
