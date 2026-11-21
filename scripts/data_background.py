@@ -12,8 +12,15 @@ from genesleuth.data import background
 def main(sample: str | None = None, force: bool = False) -> None:
     """Build background_<sample>.tsv.gz, then the suspects bundle (skips what already exists unless force)."""
     sample = sample or config.DEFAULT_SAMPLE
-    background.load_background(sample, rebuild=force)
     from genesleuth.data import suspects
+    if not force:
+        try:
+            suspects.load_suspects_raw(sample)
+            print(f"suspects bundle for {sample} present; skipping")
+            return
+        except FileNotFoundError:
+            pass
+    background.load_background(sample, rebuild=force)
     suspects.build_suspects(sample, force=force)
 
 
