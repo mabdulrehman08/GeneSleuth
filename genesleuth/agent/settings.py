@@ -1,7 +1,7 @@
 """Operational limits and pricing for a bounded case investigation."""
 from genesleuth import config
 
-GEMINI_TIMEOUT_MS = 30_000
+GEMINI_TIMEOUT_MS = 90_000   # Neon turns measured at 26-54 s (60k input tokens); 30 s killed them
 MANAGED_TIMEOUT_MS = 75_000
 GEMINI_OVERLOAD_RETRIES = 3
 DECISION_MAX_QUESTIONS = 1000
@@ -15,7 +15,7 @@ AG_CONCURRENCY = 4
 ATLAS_WORKERS = 10
 TISSUE_CANDIDATES = 12
 PROFILE_LIMITS = {
-    "demo": {"score_calls": 25, "tool_calls": 45, "thinking": "medium", "submit_after_s": 120, "deadline_s": 155},
+    "demo": {"score_calls": 25, "tool_calls": 45, "thinking": "medium", "submit_after_s": 75, "deadline_s": 135},
     "bench": {"score_calls": 30, "tool_calls": 100, "thinking": "high", "submit_after_s": 300, "deadline_s": 360},
 }
 # Published standard paid-tier prices per one million tokens for the event.

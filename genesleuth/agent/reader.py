@@ -95,7 +95,7 @@ def _extract(payload: bytes) -> tuple[Referral, str]:
     """Read each distinct PDF once per process, with one model fallback on overload."""
     media = [media_block(payload, "application/pdf"),
              {"type": "text", "text": "Read the referral and propose a bounded hypothesis plan."}]
-    options = {"thinking": "medium", "instruction": f"{INSTRUCTION}\n{PLAN_INSTRUCTION}"}
+    options = {"thinking": "low", "instruction": f"{INSTRUCTION}\n{PLAN_INSTRUCTION}"}
     model = config.CARBON
     try:
         result = structured(model, media, Referral.model_json_schema(), **options)

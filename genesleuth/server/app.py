@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 WEB = ROOT / "web"
 BENCHMARK = ROOT / "bench" / "results" / "test"
 BUILD_TIMEOUT = 20
-INVESTIGATION_TIMEOUT = 180
+INVESTIGATION_TIMEOUT = 200
 PLOT_TIMEOUT = 40
 ALPHAGENOME_BUDGET = 25
 
@@ -218,7 +218,7 @@ def create_app(*, dev: bool = False) -> FastAPI:
             run.append("done", payload)
         except Exception as error:
             if isinstance(error, TimeoutError):
-                message = "The investigation reached the 180-second server limit."
+                message = "The investigation reached the 200-second server limit."
             elif isinstance(error, ImportError):
                 message = "The data or investigator integration module is missing."
             else:

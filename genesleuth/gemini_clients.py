@@ -43,6 +43,7 @@ class GatewayError(InvestigationError):
         super().__init__(f"{operation} on {model} failed: {detail}")
         self.status = status
         self.overloaded = status == 503
+        self.timed_out = kind in {"APITimeoutError", "ReadTimeout", "TimeoutException", "DeadlineExceeded"} or status == 504
 
 
 @lru_cache(maxsize=3)

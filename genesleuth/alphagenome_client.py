@@ -125,10 +125,14 @@ def _write_cache(path: Path, value) -> None:
         temporary = Path(output.name)
         try:
             json.dump(value, output, ensure_ascii=False, allow_nan=False)
-            output.flush()
-            temporary.replace(path)
-        finally:
+        except BaseException:
+            output.close()
             temporary.unlink(missing_ok=True)
+            raise
+    try:
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 @lru_cache(maxsize=1)

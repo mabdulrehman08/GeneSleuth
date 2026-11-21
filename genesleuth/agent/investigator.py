@@ -109,7 +109,9 @@ async def _create_turn(conversation: Conversation, data, tools: list[dict], thin
         return response
 
     models = [config.NEON, config.CARBON, config.HYDROGEN]
-    for model in models[models.index(conversation.model):]:
+    index = models.index(conversation.model)
+    while index < len(models):
+        model = models[index]
         if model != conversation.model:
             emit("plan", "GeneSleuth", f"Investigator fell back from {conversation.model} to {model}",
                  fallback_from=conversation.model, fallback_to=model)
@@ -120,8 +122,10 @@ async def _create_turn(conversation: Conversation, data, tools: list[dict], thin
                 system_instruction=INSTRUCTIONS, generation_config={"thinking_level": thinking},
             )
         except GatewayError as error:
-            if not error.overloaded or model == models[-1]:
+            if not (error.overloaded or error.timed_out) or model == models[-1]:
                 raise
+            # A timeout means the slow model cannot finish in budget: go straight to the fast one.
+            index = len(models) - 1 if error.timed_out else index + 1
     raise InvestigationError("Investigator models were unavailable")
 
 
@@ -216,8 +220,18 @@ async def investigate_tools(
             hurried = True
             ledger.emit("plan", "Gemini 4 Neon", "Time limit reached. Requesting the current shortlist.",
                         submit_now=True, elapsed_s=monotonic() - start)
-            notice = {"type": "text", "text": "Time budget reached. Call submit_report now with existing evidence."}
-            data = [*data, notice] if isinstance(data, list) else f"{data}\n{notice['text']}"
+            notice = "Time budget reached. Call submit_report now with existing evidence."
+            if isinstance(data, list) and data and isinstance(data[-1], dict) and data[-1].get("type") == "function_result":
+                # The SDK rejects a bare text item next to function_result steps: put the note inside the last result.
+                last = dict(data[-1])
+                result = last.get("result")
+                last["result"] = ([*result, {"type": "text", "text": notice}] if isinstance(result, list)
+                                  else {**(result if isinstance(result, dict) else {"value": result}), "notice": notice})
+                data = [*data[:-1], last]
+            elif isinstance(data, list):
+                data = [*data, {"type": "text", "text": notice}]
+            else:
+                data = f"{data}\n{notice}"
         remaining = ledger.limits["deadline_s"] - (monotonic() - start)
         if remaining <= 0:
             break
