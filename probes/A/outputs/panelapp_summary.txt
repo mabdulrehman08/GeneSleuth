@@ -1,0 +1,3 @@
+Early onset or syndromic epilepsy 9.100 2026-11-11T17:00:16.200591Z
+genes 920 green 632
+['AARS', 'AASS', 'ABAT', 'ACOX1', 'ACTL6B', 'ADAR', 'ADARB1', 'ADGRG1', 'ADPRHL2', 'ADSL']

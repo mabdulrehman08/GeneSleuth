@@ -1,0 +1,36 @@
+== HEAD checks
+--- https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.summary.txt.gz
+HTTP/1.1 200 OK
+Last-Modified: Thu, 04 Dec 2025 19:53:44 GMT
+Content-Length: 1115288
+--- https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.ensembl_genomic.gtf.gz
+HTTP/1.1 200 OK
+Last-Modified: Thu, 04 Dec 2025 19:59:15 GMT
+Content-Length: 8634035
+--- https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz.tbi
+HTTP/1.1 200 OK
+Last-Modified: Mon, 25 Apr 2022 14:26:00 GMT
+Content-Length: 194167
+--- https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1/vcf/genomes/gnomad.genomes.v4.1.sites.chr2.vcf.bgz.tbi
+HTTP/2 200 
+last-modified: Wed, 17 Apr 2024 00:04:53 GMT
+content-length: 230708
+--- https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz
+HTTP/1.1 200 OK
+Last-Modified: Mon, 16 Nov 2026 21:45:32 GMT
+Content-Length: 201601306
+--- https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi
+HTTP/1.1 200 OK
+Last-Modified: Mon, 16 Nov 2026 21:45:33 GMT
+Content-Length: 611972
+--- https://panelapp.genomicsengland.co.uk/api/v1/panels/402/
+HTTP/2 200 
+content-length: 921352
+--- https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/phenotype.hpoa
+HTTP/2 302 
+content-length: 0
+HTTP/2 302 
+content-length: 0
+HTTP/2 200 
+last-modified: Wed, 02 Sep 2026 21:12:10 GMT
+content-length: 35816037

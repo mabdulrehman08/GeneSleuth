@@ -1,0 +1,6 @@
+exon 204815
+CDS 194202
+UTR 48592
+start_codon 19400
+stop_codon 19387
+transcript 19437

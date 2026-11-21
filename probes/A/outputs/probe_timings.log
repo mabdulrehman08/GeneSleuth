@@ -1,0 +1,17 @@
+[timing] .910048090 s rc=0 :: curl -s --max-time 60 https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.summary.txt.gz -o mane_summary.txt.gz
+[timing] 5.580517428 s rc=0 :: curl -s --max-time 120 https://ftp.ncbi.nlm.nih.gov/refseq/MANE/MANE_human/current/MANE.GRCh38.v1.5.ensembl_genomic.gtf.gz -o mane.gtf.gz
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[timing] 12.321979134 s rc=0 :: bcftools query -l https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[timing] 11.729654495 s rc=0 :: bcftools view -s NA12878 -r chr2:165980000-166140000 https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20220422_3202_phased_SNV_INDEL_SV/1kGP_high_coverage_Illumina.chr2.filtered.SNV_INDEL_SV_phased_panel.vcf.gz
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[W::bcf_hdr_check_sanity] AC should be declared as Number=A
+[timing] 11.695818419 s rc=0 :: bcftools view -R pos.tsv -G https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1/vcf/genomes/gnomad.genomes.v4.1.sites.chr2.vcf.bgz
+[timing] 14.465684643 s rc=0 :: bcftools view -r chr2:165980000-166140000 https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1/vcf/genomes/gnomad.genomes.v4.1.sites.chr2.vcf.bgz
+[timing] 1.152566632 s rc=0 :: bcftools view -r 2:165980000-166140000 -i INFO/CLNSIG~"athogenic" && INFO/CLNSIG!~"onflicting" https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz -H
+[timing] 1.733171462 s rc=0 :: curl -s --max-time 60 -X POST -H Content-Type: application/json -H Accept: application/json https://rest.ensembl.org/vep/homo_sapiens/region -d {"variants":["2 165991234 . A G . . .","9 128225994 . G A . . ."]}
+[timing] 1.626225571 s rc=0 :: curl -s --max-time 60 https://panelapp.genomicsengland.co.uk/api/v1/panels/402/ -o panelapp402.json
