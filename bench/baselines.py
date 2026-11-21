@@ -36,8 +36,7 @@ W_PHENO, W_EFFECT, W_SEVERITY, W_GENE_PLP = 0.4, 0.3, 0.2, 0.1
 TOP_N = 10
 LOF_TERMS = ("frameshift", "stop_gained", "start_lost", "stop_lost", "transcript_ablation")
 PLP_RE = re.compile(r"^(pathogenic|likely_pathogenic|likely pathogenic)", re.I)
-EPILEPSY_RE = re.compile(r"epilep|seiz|encephalopath|dravet|spasm|convuls|lennox|rett|tuberous|neuronal ceroid|ataxia|"
-                         r"developmental", re.I)
+EPILEPSY_RE = re.compile(r"epilep|seiz|encephalopath|dravet|spasm|convuls|lennox|rett syndrome|tuberous|neuronal ceroid|febrile", re.I)
 
 
 # ----------------------------------------------------------------------------
@@ -93,8 +92,10 @@ def _plp_epilepsy_records() -> Optional[dict[str, list[tuple[str, str, str, int]
                 pos = int(row.get("pos") or 0)
             except ValueError:
                 continue
-            out.setdefault((row.get("gene") or "").upper(), []).append(
-                (row.get("variant_id") or "", str(row.get("variation_id") or ""), row.get("chrom") or "", pos))
+            rec = (row.get("variant_id") or "", str(row.get("variation_id") or ""), row.get("chrom") or "", pos)
+            for g in (row.get("gene") or "").upper().split("|"):  # multi-gene entries look like ARX|LOC109610631
+                if g:
+                    out.setdefault(g, []).append(rec)
     return out
 
 
