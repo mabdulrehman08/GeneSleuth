@@ -82,7 +82,7 @@ numbers are not comparable to theirs.
 
 Every full-arm miss gets exactly one category, assigned by code from the saved tool calls (`bench/report.py:classify_failure`)
 in this order: `error`, `unscorable_variant_type` (not a single-base substitution), `missed_second_hit_or_common_allele` (frequency
-lookup on the hidden variant shows AF >= 0.001), `checker_rejected_true_claim`, `never_inspected` (no tool call touched the hidden
+lookup on the hidden variant returns the 0.1–1% bucket or a legacy AF of at least 0.001), `checker_rejected_true_claim`, `never_inspected` (no tool call touched the hidden
 variant), `wrong_tissue` (scored with AlphaGenome but never in a brain-like tissue), `weak_alphagenome_effect` (brain effect below
 the median of the agent's other calls), `phenotype_mismatch` (phenotype match for the hidden gene < 0.3), `outranked_by_coding` (hidden
 is non-coding and at least two of the top three are coding). A miss that fits none is reported as `unclassified` (an extra
@@ -115,6 +115,13 @@ _Not run yet. This block is replaced by `python -m bench.report --split test --f
 
 - **One background sample.** All cases share one person's genome. A different background would change the suspects; we did not
   measure that variation.
+- **Population-frequency leakage.** NA12878 is included in gnomAD v4.1. Almost all of its background suspects are
+  observed there, while a planted variant may be absent. We precompute the same two frequency buckets for all candidates
+  before investigation. Variants with no local observation and observed variants below 0.1% share the `<0.1%` bucket
+  (84 background suspects). The remaining suspects are in `0.1-1%`. The agent receives no raw counts, observed flag,
+  or cache provenance. This removes the direct missingness signal. Differences in the distribution of rarity buckets can
+  still matter. Every candidate also gets the same local MANE region annotation. Coding consequences use the uniform
+  geometry-based label so the availability of a VEP annotation cannot identify the spike-in.
 - **Heterozygous injection only.** Recessive (compound heterozygous or homozygous) disease, where the second hit matters, is
   not simulated.
 - **Single-nucleotide variants only.** Indels, structural variants, repeat expansions and mosaicism are not tested.

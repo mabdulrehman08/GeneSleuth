@@ -22,6 +22,7 @@ from typing import Optional
 
 from bench import metrics as M
 from genesleuth import config
+from genesleuth.lookups.popfreq import HIGH_AF_BIN
 
 ROOT = Path(__file__).resolve().parent.parent
 RESULTS = ROOT / "bench" / "results"
@@ -97,7 +98,7 @@ def classify_failure(rec: M.CaseRecord, weak_effect_abs: float = 0.05) -> tuple[
     Rules (all computed from the result file; no peeking at anything the agent did not see):
       error                        status == error
       unscorable_variant_type      hidden variant is not a single-base substitution
-      missed_second_hit_or_common_allele   a population_frequency call on the hidden variant returned af >= 0.001
+      missed_second_hit_or_common_allele   a population_frequency call on the hidden variant returned the 0.1-1% bucket or a legacy AF >= 0.001
       checker_rejected_true_claim  the hidden variant appears with an 'unsupported' verdict
       never_inspected              no tool call mentions the hidden variant id
       wrong_tissue                 inspected with AlphaGenome, but never in a brain-like tissue
@@ -118,8 +119,12 @@ def classify_failure(rec: M.CaseRecord, weak_effect_abs: float = 0.05) -> tuple[
     ev["n_calls_on_hidden"] = len(touching)
     for tc in touching:
         if tc.tool == "population_frequency" and isinstance(tc.result, dict):
+            bucket = tc.result.get("af_bin")
             af = tc.result.get("af")
-            if isinstance(af, (int, float)) and af >= COMMON_AF:
+            if bucket == HIGH_AF_BIN:
+                ev["af_bin"] = bucket
+                return "missed_second_hit_or_common_allele", ev
+            if bucket is None and isinstance(af, (int, float)) and af >= COMMON_AF:
                 ev["af"] = af
                 return "missed_second_hit_or_common_allele", ev
     for s in res.ranked:

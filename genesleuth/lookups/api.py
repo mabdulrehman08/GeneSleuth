@@ -39,7 +39,7 @@ def region_context(variant_id: str) -> dict:
 
 @safe
 def population_frequency(variant_id: str) -> dict:
-    """{found, source, af, ac, an}: gnomAD v4.1 (GraphQL), else the 1000G AF stored on the suspect, else not observed."""
+    """Return {af_bin, source} using prepared gnomAD v4.1 frequencies."""
     if _fake():
         from . import fakes
         return fakes.population_frequency(variant_id)

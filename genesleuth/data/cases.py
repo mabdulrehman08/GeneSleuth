@@ -3,8 +3,8 @@
 Feature: list_demo_options() and build_case() backed by real data (see api.py for the public wrappers).
 How a case is built (target < 20 s, normally well under 1 s because everything heavy is pre-computed):
   1. the background suspects of the sample (slice A1: suspects_<sample>.json[.gz], real 1000G variants in the panel regions after
-     the rarity filter, annotated with the same pipeline) are loaded once and cached in memory;
-  2. the chosen ClinVar variant is injected as genotype 0/1, annotated with the same annotator and the same Variant field set
+     the rarity filter, with uniform local annotations applied at case build) are loaded once and cached in memory;
+  2. the chosen ClinVar variant is injected as genotype 0/1, annotated with the same local annotator and the same Variant field set
      as every background suspect (the Variant schema has no allele-frequency field, so nothing reveals the planted one);
   3. suspects are shuffled with a seeded RNG, the funnel counts include the planted variant, the pre-generated referral
      letter is attached and a deterministic hex case_id (hash of option, sample and seed) is assigned;
@@ -137,54 +137,21 @@ def list_demo_options() -> list[DemoOption]:
 
 # ----------------------------------------------------------------- annotation of the planted variant
 
+def _case_annotations(variant_id: str) -> dict:
+    """Project the uniform region lookup onto the candidate fields visible to models."""
+    from genesleuth.lookups.region import region_context
+
+    context = region_context(variant_id)
+    return {key: context[key] for key in ("gene", "region", "consequence", "distance_to_tss")}
+
+
 def annotate_planted(cand: dict) -> Variant:
-    """Annotate the planted variant with the same annotator as the background suspects (slice A1), else a documented stand-in."""
-    try:
-        from genesleuth.data.annotate import annotate_variant  # slice A1: MANE Select geometry, same code as the background suspects
-    except ImportError:
-        return _standin_annotate(cand)
-    return annotate_variant(cand["chrom"], cand["pos"], cand["ref"], cand["alt"], genotype="0/1")
-
-
-def _standin_annotate(cand: dict) -> Variant:
-    """Stand-in annotator (used only until slice A1's annotate_variant is on main): MANE exon geometry from panel.py."""
-    from genesleuth.data import panel
-    chrom, pos, gene = cand["chrom"], cand["pos"], cand["gene"]
-    reg = next((r for r in panel.load_panel_regions() if r["gene"] == gene), None)
-    feats = panel.load_features().get(gene, [])
-    strand = reg["strand"] if reg else "+"
-    exons = sorted((f["start"], f["end"]) for f in feats if f["feature"] == "exon")
-    cds = [(f["start"], f["end"]) for f in feats if f["feature"] == "CDS"]
-    region, conseq = "intergenic", "intergenic_variant"
-    in_exon = next((e for e in exons if e[0] <= pos <= e[1]), None)
-    gene_lo = min(e[0] for e in exons) if exons else pos
-    gene_hi = max(e[1] for e in exons) if exons else pos
-    if in_exon:
-        if any(s <= pos <= e for s, e in cds):
-            region, conseq = "coding", "coding_sequence_variant"
-        else:
-            cds_lo = min(s for s, _ in cds) if cds else gene_lo
-            five = (pos < cds_lo) if strand == "+" else (pos > max(e for _, e in cds) if cds else False)
-            region, conseq = ("utr5", "5_prime_UTR_variant") if five else ("utr3", "3_prime_UTR_variant")
-    elif gene_lo < pos < gene_hi:
-        d, side = min(((abs(pos - e[1]), "after") if pos > e[1] else (abs(e[0] - pos), "before") for e in exons if pos > e[1] or pos < e[0]),
-                      key=lambda t: t[0])
-        donor = (side == "after") == (strand == "+")
-        if d <= 2:
-            region, conseq = "splice", "splice_donor_variant" if donor else "splice_acceptor_variant"
-        elif d <= 8:
-            region, conseq = "splice", "splice_region_variant"
-        else:
-            region, conseq = "intron", "intron_variant"
-    elif reg:
-        up = (pos < gene_lo) if strand == "+" else (pos > gene_hi)
-        if up:
-            region, conseq = ("promoter", "upstream_gene_variant") if abs(pos - reg["tss"]) <= 2000 else ("intergenic", "upstream_gene_variant")
-        else:
-            region, conseq = "intergenic", "downstream_gene_variant"
-    tss_dist = (pos - reg["tss"]) * (1 if strand == "+" else -1) if reg else None
-    return Variant(variant_id=cand["variant_id"], chrom=chrom, pos=pos, ref=cand["ref"], alt=cand["alt"], gene=gene, region=region,
-                   consequence=conseq, genotype="0/1", distance_to_tss=tss_dist)
+    """Apply the same local annotations used for background suspects."""
+    return Variant(
+        variant_id=cand["variant_id"], chrom=cand["chrom"], pos=cand["pos"],
+        ref=cand["ref"], alt=cand["alt"], genotype="0/1",
+        **_case_annotations(cand["variant_id"]),
+    )
 
 
 # ----------------------------------------------------------------- case building
@@ -217,10 +184,17 @@ def build_case(option_id: str | None = None, sample_id: str | None = None, split
         pdf = _letter_pdf(option_id)
     meta = letters.load_meta(option_id) or {}
     planted = annotate_planted(cand)
-    suspects = [Variant(**v) for v in bg["suspects"]
-                if (v["chrom"], v["pos"]) != (planted.chrom, planted.pos)]  # a background record at the same position is replaced
+    suspects = [
+        Variant(**{**row, **_case_annotations(row["variant_id"])})
+        for row in bg["suspects"]
+        if (row["chrom"], row["pos"]) != (planted.chrom, planted.pos)
+    ]
     replaced = len(bg["suspects"]) - len(suspects)
     suspects.append(planted)
+
+    from genesleuth.lookups.popfreq import prepare_frequency_bins
+
+    prepare_frequency_bins([variant.variant_id for variant in suspects])
     random.Random(f"{option_id}|{sample}|{seed}").shuffle(suspects)
     funnel = dict(bg["funnel"])
     for k in list(funnel):

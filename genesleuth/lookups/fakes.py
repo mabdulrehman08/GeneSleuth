@@ -100,7 +100,8 @@ def region_context(variant_id: str) -> dict:
     gene = _gene_at(chrom, pos)
     if gene is None:
         return {"variant_id": vid, "gene": None, "region": "intergenic", "consequence": "intergenic_variant",
-                "distance_to_tss": None, "exon": None, "intron": None, "nearby_genes": [], "source": "fake"}
+                "distance_to_tss": None, "exon": None, "intron": None, "strand": None,
+                "dist_to_exon_edge": None, "nearby_genes": [], "source": "MANE v1.5 + VEP"}
     c, s, e, strand, tss, ens = _GENES[gene]
     regions = ["intron", "intron", "splice", "coding", "utr5", "utr3", "promoter"]
     region = regions[_h(vid) % len(regions)]
@@ -111,19 +112,15 @@ def region_context(variant_id: str) -> dict:
     return {"variant_id": vid, "gene": gene, "region": region, "consequence": cons, "distance_to_tss": dist,
             "exon": n if region in ("coding", "splice") else None,
             "intron": n if region == "intron" else None,
-            "strand": strand, "nearby_genes": [g for g in _GENES if g != gene and _GENES[g][0] == chrom][:3],
-            "source": "fake"}
+            "strand": strand, "dist_to_exon_edge": None,
+            "nearby_genes": [g for g in _GENES if g != gene and _GENES[g][0] == chrom][:3],
+            "source": "MANE v1.5 + VEP"}
 
 
 def population_frequency(variant_id: str) -> dict:
-    """Fake gnomAD-style frequency: ~70% of ids are 'not observed', the rest rare."""
-    vid = canonical_id(variant_id)
-    h = _h(vid)
-    if h % 10 < 7:
-        return {"found": False, "source": "fake", "af": None, "ac": None, "an": None, "note": "not observed in gnomAD v4.1 (fake)"}
-    an = 152000
-    ac = 1 + h % 40
-    return {"found": True, "source": "fake", "af": ac / an, "ac": ac, "an": an}
+    """Fake frequency evidence with the same buckets and columns as the real lookup."""
+    bucket = "<0.1%" if _h(canonical_id(variant_id)) % 10 < 7 else "0.1-1%"
+    return {"af_bin": bucket, "source": "gnomAD v4.1"}
 
 
 _FAKE_CLINVAR = {

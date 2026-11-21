@@ -66,7 +66,7 @@ TOOL_DECLARATIONS = [
           {"region": _TEXT, "gene": _TEXT, "limit": {"type": "integer"}, "offset": {"type": "integer"}}, []),
     _tool("region_context", "Read the annotated region and nearby gene context of a candidate.",
           {"variant_id": _TEXT}, ["variant_id"]),
-    _tool("population_frequency", "Look up population allele frequency for a candidate.",
+    _tool("population_frequency", "Look up the gnomAD population frequency bucket for a candidate.",
           {"variant_id": _TEXT}, ["variant_id"]),
     _tool("gene_phenotypes", "Look up phenotype associations for a candidate gene.", {"gene": _TEXT}, ["gene"]),
     _tool("phenotype_match", "Measure semantic match to this patient's HPO terms.", {"gene": _TEXT}, ["gene"]),
@@ -184,16 +184,14 @@ class ToolLedger:
         data = await asyncio.to_thread(region_context, variant_id)
         canonical = {"gene": variant.gene, "region": variant.region, "consequence": variant.consequence,
                      "distance_to_tss": variant.distance_to_tss}
-        if "error" not in data:
-            canonical.update({key: value for key, value in data.items() if value is not None})
-        return canonical, f"Read region context for {variant_id}", None
+        return (canonical if "error" in data else data), f"Read region context for {variant_id}", None
 
     async def _frequency(self, variant_id: str):
         """Read the precomputed lookup or find frequency for a known candidate."""
         from genesleuth.lookups.api import population_frequency
         self.variants[variant_id]
         value = self.frequencies.get(variant_id)
-        if value is None or value.get("source") == "unavailable":
+        if value is None:
             value = await asyncio.to_thread(population_frequency, variant_id)
         return value, f"Read population frequency for {variant_id}", None
 

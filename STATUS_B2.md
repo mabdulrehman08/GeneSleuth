@@ -1,9 +1,11 @@
 # B2 demo and docs
 
-Updated 2026-11-21 14:09:41 EST
+Updated 2026-11-21 14:51:45 EST
 
 ## Done
 
+- The live Terminal preflight passed Decision 1, AlphaGenome and Carbon. The updated bundle has 85 demo choices and all expected PDFs.
+- Blocked lookup leakage before the benchmark. Case construction precomputes frequency buckets for every suspect, region annotations come from one local path, and Decision 1 and Neon receive no frequency provenance. The five-case regression and 22 related tests passed.
 - Read the five pre-event research briefs and B1's probe report.
 - Built the FastAPI demo routes, judge's picker, referral preview, event timeline, claim evidence, review, reveal, plots, and held-out benchmark page.
 - Added live demo preflight and background-only cache warming scripts.
@@ -21,9 +23,9 @@ Updated 2026-11-21 14:09:41 EST
 
 ## Blocked
 
+- Run DEV and TEST only after the leakage fix is confirmed on GitHub main. Held-out results are pending.
 - The B2 shell cannot resolve GitHub. The previous collaborator Terminal push worked. The connected GitHub app rejected the follow-up with HTTP 403, and Chrome's upload form did not accept the staged folders from Finder.
 - B1's investigator and real-case check are on GitHub main. The integrated preflight passed key presence and real PDF setup. Decisions and Carbon returned SDK APIConnectionError, and AlphaGenome condition metadata timed out from this workspace.
-- Side A's setup found 66 missing PDFs across DEV, TEST and DEMO in the current snapshot. The real-case data test also found that option 280045 (ALDH7A1) has a PDF but no bundled truth phenotypes. Twelve other targeted data and benchmark tests passed, with one skipped. Side A owns the missing letter metadata. The held-out report and chart remain pending.
 - The B2 sandbox denied local port binding, and offline Chromium launch aborted. FastAPI and static frontend checks passed. Browser rehearsal requires a terminal with localhost access.
 
 ## NEEDS FROM B1

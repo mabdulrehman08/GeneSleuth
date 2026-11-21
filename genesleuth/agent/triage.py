@@ -81,7 +81,7 @@ async def triage_candidates(
         pop = frequencies[variant.variant_id]
         scores = atlas.get(variant.variant_id, {})
         rows.append({
-            **candidate_row(variant), "frequency": pop.get("af"),
+            **candidate_row(variant), "af_bin": pop.get("af_bin"),
             "phenotype_match": by_gene.get(variant.gene, {}).get("score"),
             "AVI": scores.get("avi"), "top_atlas_feature": next(iter(scores.get("top_features") or []), None),
         })

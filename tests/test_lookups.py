@@ -4,7 +4,6 @@ Run: PYTHONPATH=. python -m pytest tests/test_lookups.py -q          (real table
      FAKE_MODE=1 PYTHONPATH=. python -m pytest tests/test_lookups.py -q   (fakes only, no data, no network)
 Known variants (ClinVar P/LP, GRCh38): SCN1A splice donor chr2-166037775-C-A, KCNQ2 splice acceptor
 chr20-63413582-C-T, TSC2 splice donor chr16-2048755-T-C. Known genes: SCN1A, KCNQ2.
-The gnomAD test is skipped when the API is rate limited.
 """
 import json
 
@@ -41,13 +40,54 @@ def test_region_context_outside_panel():
 
 
 def test_population_frequency_shape():
-    r = api.population_frequency("chr17-7675088-C-T")  # TP53 R248Q-like site, very rare in gnomAD
-    if r.get("source") == "unavailable":
-        pytest.skip("gnomAD API rate limited")
-    assert set(r) >= {"found", "source", "af", "ac", "an"}
-    json.dumps(r)
-    if not FAKE:
-        assert r["found"] is True and r["af"] < 0.001
+    result = api.population_frequency("chr17-7675088-C-T")
+    assert result.keys() == {"af_bin", "source"}
+    assert result["source"] == "gnomAD v4.1"
+    assert result["af_bin"] in {"<0.1%", "0.1-1%"}
+    json.dumps(result)
+
+
+def test_five_cases_have_uniform_evidence(monkeypatch, tmp_path):
+    from genesleuth.data import api as cases
+    from genesleuth.lookups._common import cache_get, cache_put
+
+    if not cases._real_ready():
+        pytest.skip("Real demo assets are required for the leakage regression")
+
+    def reject_network(*args, **kwargs):
+        pytest.fail("Case preparation or lookups attempted a network request")
+
+    monkeypatch.setattr(config, "CACHE_DIR", tmp_path / "cache")
+    monkeypatch.setattr("requests.post", reject_network)
+    options = cases.list_demo_options()[:5]
+    assert len(options) == 5
+    for seed, option in enumerate(options):
+        case, truth = cases.build_case(option.option_id, seed=seed)
+        hidden_id = truth.hidden_variant_id
+        background = [v for v in case.suspects if v.variant_id != hidden_id]
+
+        cache_put("popfreq", hidden_id, {"found": False, "source": "legacy", "note": "not observed"})
+        cache_put("region", hidden_id, {"source": "legacy", "region": "legacy"})
+        hidden_freq = api.population_frequency(hidden_id)
+        hidden_region = api.region_context(hidden_id)
+        assert hidden_freq.keys() == {"af_bin", "source"}
+        assert hidden_freq["source"] == "gnomAD v4.1"
+        assert hidden_region["source"] == "MANE v1.5 + VEP"
+        assert "error" not in hidden_region
+        assert cache_get("popfreq-bins-v1", hidden_id) == hidden_freq["af_bin"]
+
+        seen_bins = set()
+        for variant in background:
+            frequency = api.population_frequency(variant.variant_id)
+            region = api.region_context(variant.variant_id)
+            assert frequency.keys() == hidden_freq.keys()
+            assert frequency["source"] == hidden_freq["source"]
+            assert region.keys() == hidden_region.keys()
+            assert region["source"] == hidden_region["source"]
+            assert region["consequence"] == variant.consequence
+            seen_bins.add(frequency["af_bin"])
+        assert seen_bins == {"<0.1%", "0.1-1%"}
+        assert hidden_freq["af_bin"] in seen_bins
 
 
 def test_clinvar_disabled_by_default():

@@ -39,6 +39,8 @@ def test_categories(tmp_path):
     assert classify_failure(r)[0] == "outranked_by_coding"
     r = rec_for(tmp_path, "a", tool_calls=[tc("population_frequency", {"variant_id": HID}, {"found": True, "af": 0.02})])
     assert classify_failure(r)[0] == "missed_second_hit_or_common_allele"
+    r = rec_for(tmp_path, "af-bin", tool_calls=[tc("population_frequency", {"variant_id": HID}, {"af_bin": "0.1-1%"})])
+    assert classify_failure(r)[0] == "missed_second_hit_or_common_allele"
     r = rec_for(tmp_path, "u", tool_calls=[tc("score_variant", {"variant_id": HID, "tissue": "UBERON:0000955"}, brain)] + strong_other,
                 top_regions=["intron"] * 10)
     assert classify_failure(r)[0] == "unclassified"
