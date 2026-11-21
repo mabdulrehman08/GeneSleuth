@@ -33,15 +33,6 @@
       <div class="picker-intro">
         <h1 id="picker-title" tabindex="-1">Find the hidden variant.</h1>
         <p class="lede">A public disease variant is planted in a real genome. The investigator sees only the referral letter and the filtered candidate list. The answer stays on the server until you reveal it.</p>
-        <form id="upload-form" class="upload" aria-labelledby="upload-title">
-          <h2 id="upload-title">Or bring your own case</h2>
-          <p class="small">Upload a patient variant file (VCF, GRCh38, .vcf or .vcf.gz) and the referral letter (PDF, scanned or typed). If the files cannot be used, the page says so and uses a prepared demo genome instead.</p>
-          <label for="vcf-file">Variant file</label>
-          <input id="vcf-file" type="file" accept=".vcf,.gz,.vcf.gz" required>
-          <label for="pdf-file">Referral letter</label>
-          <input id="pdf-file" type="file" accept="application/pdf,.pdf" required>
-          <button id="upload-submit" class="button primary" type="submit">Investigate my case</button>
-        </form>
       </div>
       <div class="docket">
         <div class="docket-head">
@@ -51,6 +42,15 @@
           <button id="random" class="button primary" type="button">Random case</button>
         </div>
         <div id="options" class="options" aria-label="Case options"></div>
+        <form id="upload-form" class="upload" aria-labelledby="upload-title">
+          <div class="upload-text">
+            <h2 id="upload-title">Or bring your own case</h2>
+            <p class="small">A variant file (VCF, GRCh38, .vcf or .vcf.gz) and the referral letter as a PDF. If the files can't be used, the page says so and runs a prepared demo genome instead.</p>
+          </div>
+          <label class="file-field"><span>Variant file</span><input id="vcf-file" type="file" accept=".vcf,.gz,.vcf.gz" required><output class="file-name empty" for="vcf-file">No file yet</output></label>
+          <label class="file-field"><span>Referral letter</span><input id="pdf-file" type="file" accept="application/pdf,.pdf" required><output class="file-name empty" for="pdf-file">No file yet</output></label>
+          <button id="upload-submit" class="button quiet" type="submit">Investigate my case</button>
+        </form>
       </div>
       <ol class="explainer" aria-label="What this demo does, in three steps">
         <li>

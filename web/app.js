@@ -652,6 +652,13 @@ function reset() {
 byId("search").addEventListener("input", displayOptions);
 byId("random").addEventListener("click", () => build(null));
 byId("upload-form").addEventListener("submit", uploadCase);
+for (const input of document.querySelectorAll(".file-field input")) {
+  input.addEventListener("change", () => {
+    const output = input.nextElementSibling;
+    output.textContent = input.files[0]?.name || "No file yet";
+    output.classList.toggle("empty", !input.files[0]);
+  });
+}
 byId("investigate").addEventListener("click", investigate);
 byId("reveal-button").addEventListener("click", reveal);
 byId("reset").addEventListener("click", reset);

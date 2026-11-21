@@ -95,11 +95,6 @@ input:focus, textarea:focus { border-color: var(--brain); }
 .organ-label { font-family: var(--sans); font-size: 12px; fill: var(--muted); }
 .swap { animation: swap 4s steps(1) 1.2s both; }
 @keyframes swap { 0% { fill: var(--muted); } 100% { fill: var(--blood); } }
-.upload { display: grid; gap: .5rem; margin-top: 1.5rem; padding: 1rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
-.upload h2 { font-size: 1.05rem; margin: 0; }
-.upload label { font-size: .85rem; font-weight: 500; }
-.upload input[type=file] { font: inherit; max-width: 100%; }
-.upload .button { justify-self: start; margin-top: .4rem; }
 .docket { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
 .docket-head { display: flex; align-items: center; gap: .75rem; padding: .85rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
 .docket-head input { flex: 1 1 14rem; }
@@ -111,6 +106,18 @@ input:focus, textarea:focus { border-color: var(--brain); }
 .option strong { font-weight: 600; font-style: italic; letter-spacing: .01em; }
 .option .condition { min-width: 0; overflow-wrap: anywhere; color: #333d48; }
 .option .region { font-size: .84rem; color: var(--muted); white-space: nowrap; }
+.upload { display: grid; grid-template-columns: repeat(2, 14rem); gap: .6rem 1.5rem; align-items: end; padding: .85rem; border-top: 1px solid var(--rule); background: #f9faf9; }
+.upload h2 { font-size: .95rem; font-weight: 600; }
+.upload-text { grid-column: 1 / -1; }
+.upload-text p { margin-top: .15rem; max-width: 70ch; line-height: 1.4; }
+.file-field { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .25rem .5rem; align-items: center; font-size: .8rem; color: var(--muted); }
+.file-field > span { grid-column: 1 / -1; }
+.file-field input { width: 7.4rem; padding: 0; border: 0; background: transparent; font-size: .86rem; color: transparent; overflow: hidden; }
+.file-name { min-width: 0; font-size: .84rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-name:empty::before, .file-name.empty { color: var(--muted); }
+.file-field input::file-selector-button { font: inherit; font-weight: 500; color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: 6px; padding: .4rem .7rem; margin-right: .5rem; cursor: pointer; }
+.file-field input::file-selector-button:hover { border-color: var(--ink); }
+.upload .button { grid-column: 1 / -1; min-height: 40px; justify-self: start; white-space: nowrap; margin-top: .2rem; }
 .options:empty::after { content: "No cases match that search."; display: block; padding: 1.5rem 1rem; color: var(--muted); }
 
 /* Dossier */
@@ -278,6 +285,7 @@ dialog label { font-size: .86rem; font-weight: 500; margin-top: .3rem; }
 @media (max-width: 860px) {
   .picker { grid-template-columns: 1fr; gap: 1.5rem; }
   .explainer { grid-template-columns: 1fr; }
+  .upload { grid-template-columns: 1fr; }
   .picker h1 { max-width: none; }
   .dossier { grid-template-columns: 1fr; }
   .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 1px; }
