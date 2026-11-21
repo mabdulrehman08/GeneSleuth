@@ -255,9 +255,13 @@ def create_app(*, dev: bool = False) -> FastAPI:
         try:
             def prepare():
                 """Build the selected case in a worker with real-data readiness checked."""
-                return case_api(dev=dev).build_case(
-                    option_id=selection.option_id, split="demo", seed=secrets.randbits(31),
-                )
+                adapter = case_api(dev=dev)
+                option_id = selection.option_id
+                if option_id is not None and all(
+                    option.option_id != option_id for option in adapter.list_demo_options()
+                ):
+                    raise KeyError(option_id)
+                return adapter.build_case(option_id=option_id, split="demo", seed=secrets.randbits(31))
 
             case, truth = await asyncio.wait_for(asyncio.to_thread(prepare), timeout=BUILD_TIMEOUT)
         except (KeyError, ValueError):

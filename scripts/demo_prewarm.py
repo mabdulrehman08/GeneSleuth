@@ -3,28 +3,33 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from genesleuth.config import ALPHAGENOME_API_KEY, BLOOD_TISSUE, BRAIN_TISSUE, DEFAULT_SAMPLE, FAKE_MODE
 from genesleuth.schemas import Variant
-from genesleuth.server.integration import case_api
 
 
 def background(sample_id: str, source: Path | None) -> list[Variant]:
-    """Read the explicitly background-only list from Side A's adapter or export."""
-    if source is not None:
-        rows = json.loads(source.read_text(encoding="utf-8"))
-        return [Variant.model_validate(row) for row in rows]
-    adapter = case_api()
-    lookup = getattr(adapter, "background_suspects", None)
-    if not callable(lookup):
-        raise RuntimeError(
-            "Side A's background_suspects interface is unavailable. "
-            "Pass --background the background-only JSON export from Side A."
-        )
-    return [Variant.model_validate(row) for row in lookup(sample_id)]
+    """Read Side A's background bundle and exclude potential spike-in positions."""
+    from genesleuth.data import cases, splits
+
+    if source is None:
+        rows = cases.load_background(sample_id)["suspects"]
+    else:
+        read = gzip.open if source.suffix == ".gz" else open
+        with read(source, "rt", encoding="utf-8") as stream:
+            exported = json.load(stream)
+        rows = exported["suspects"] if isinstance(exported, dict) else exported
+
+    excluded = {
+        (candidate["chrom"], candidate["pos"])
+        for candidate in splits.load_candidates()["by_id"].values()
+    }
+    variants = [Variant.model_validate(row) for row in rows]
+    return [variant for variant in variants if (variant.chrom, variant.pos) not in excluded]
 
 
 def prewarm(variants: list[Variant], workers: int) -> int:
@@ -55,7 +60,7 @@ def main() -> int:
     """Run prewarming with bounded concurrency and an optional background export."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sample", default=DEFAULT_SAMPLE)
-    parser.add_argument("--background", type=Path, help="Side A's background-only JSON array of Variant rows")
+    parser.add_argument("--background", type=Path, help="Side A's background-only JSON or JSON.gz bundle")
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     args = parser.parse_args()
     if FAKE_MODE or not ALPHAGENOME_API_KEY:
@@ -67,7 +72,7 @@ def main() -> int:
             print("FAIL no background suspects were provided.")
             return 1
         failures = prewarm(variants, args.workers)
-    except (OSError, ValueError, RuntimeError) as error:
+    except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
         print(f"FAIL background or cache unavailable ({type(error).__name__}). "
               "Check Side A's background export and AlphaGenome setup.")
         return 1
