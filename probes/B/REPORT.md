@@ -1,6 +1,6 @@
 # Agent core API probes
 
-November 21, 2026. Public documentation reviewed. Both SDKs are installed. In this checkout the Gemini calls failed to connect and the AlphaGenome channel timed out. No live responses or tissue latencies have been verified.
+November 21, 2026. Both SDKs are installed. The full probe from this checkout encountered Gemini connection errors and an AlphaGenome channel timeout. A separate live preflight from the network-enabled terminal verified Decision 1, Carbon referral reading, and AlphaGenome scoring with the configured brain and blood conditions.
 
 | Surface | Documented interface | Local run |
 | --- | --- | --- |
@@ -32,8 +32,12 @@ The emitted JSON records success or failure by probe, elapsed time for attempted
 - [AlphaGenome splicing workflow](https://www.alphagenomedocs.com/colabs/v2/splicing_variant.html)
 - [AlphaGenome Atlas](https://www.alphagenomedocs.com/api/atlas.html)
 
-## Integrated end-to-end checkpoint
+## Live preflight and end-to-end checkpoint
+
+The live preflight built a real case and referral PDF in 0.4 seconds, checked Decision 1 in 1.3 seconds, checked the configured AlphaGenome brain and blood conditions and a background score in 3.4 seconds, and read the referral with Carbon in 14.6 seconds. These timings cover the preflight operations.
 
 `scripts/data_setup.py --check-only` passed with real Side A data and no missing letter PDFs across the checked splits. The live script built a case containing 282 candidates in 0.02 seconds. The first Carbon interaction returned an SDK connection error. The attempt produced no rank, AlphaGenome calls or checker results.
 
 The six deterministic checker tests pass independently. An offline test with provider doubles exercised the full submission and revision loop. The installed AlphaGenome visualization components also rendered a two-condition fixture to a 1600 × 900 PNG.
+
+Triage uses the public population-frequency lookup for every suspect. An offline regression check verified one lookup per suspect and confirmed that both model inputs omit frequency provenance.

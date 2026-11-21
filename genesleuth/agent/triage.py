@@ -54,30 +54,12 @@ def _route_options(plan: dict, tissue_list: list[dict]) -> list[dict]:
     return result
 
 
-def _cached_frequency(variant_id: str) -> dict:
-    """Use precomputed evidence so triage never fans out to gnomAD."""
-    try:
-        from genesleuth.lookups._common import cache_get, canonical_id
-        from genesleuth.lookups.popfreq import _stored_af
-
-        key = canonical_id(variant_id)
-        value = cache_get("popfreq", key)
-        if value is not None:
-            return value
-        annotation = _stored_af(key)
-        if annotation is not None:
-            return annotation
-    except (ImportError, OSError, ValueError):
-        pass
-    return {"found": False, "source": "unavailable", "af": None, "note": "No cached frequency evidence"}
-
-
 async def triage_candidates(
     variants: list[Variant], phenotypes: list[Phenotype], plan: dict, atlas: dict,
     tissue_list: list[dict], emit,
 ) -> Triage:
     """Get cheap evidence for each suspect and submit one batch whenever it fits."""
-    from genesleuth.lookups.api import phenotype_match
+    from genesleuth.lookups.api import phenotype_match, population_frequency
 
     hpo_ids = list(dict.fromkeys(item.hpo_id for item in phenotypes))
     genes = sorted({variant.gene for variant in variants if variant.gene})
@@ -89,7 +71,7 @@ async def triage_candidates(
             return await asyncio.to_thread(function, *args)
 
     freq, matches = await asyncio.gather(
-        asyncio.gather(*(lookup(_cached_frequency, item.variant_id) for item in variants)),
+        asyncio.gather(*(lookup(population_frequency, item.variant_id) for item in variants)),
         asyncio.gather(*(lookup(phenotype_match, gene, hpo_ids) for gene in genes)),
     )
     frequencies = dict(zip((item.variant_id for item in variants), freq, strict=True))
@@ -99,7 +81,7 @@ async def triage_candidates(
         pop = frequencies[variant.variant_id]
         scores = atlas.get(variant.variant_id, {})
         rows.append({
-            **candidate_row(variant), "frequency": pop.get("af"), "frequency_source": pop.get("source"),
+            **candidate_row(variant), "frequency": pop.get("af"),
             "phenotype_match": by_gene.get(variant.gene, {}).get("score"),
             "AVI": scores.get("avi"), "top_atlas_feature": next(iter(scores.get("top_features") or []), None),
         })

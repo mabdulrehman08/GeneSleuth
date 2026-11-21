@@ -1,6 +1,6 @@
 # Agent B1 status
 
-Updated 2026-11-21 14:26:28 EST.
+Updated 2026-11-21 14:49:37 EST.
 
 ## Done
 
@@ -8,18 +8,19 @@ Updated 2026-11-21 14:26:28 EST.
 - Implemented Carbon referral extraction and planning, AlphaGenome 2 and Atlas clients, Decision 1 triage and routing, the Neon investigation loop, Hydrogen score summaries, claim verification, the three baseline modes and same-session reviewer follow-up.
 - Six checker tests pass in the integrated checkout. Offline provider doubles exercised claim rejection, revision and same-session continuation. The installed AlphaGenome plotting components rendered two fixture conditions at 1600 × 900.
 - Side A's real-data check passed in this checkout. It found 85 available demo options and no missing letter PDFs across the checked splits.
-- The real end-to-end check built a case with 282 candidates in 0.02 s before Carbon returned APIConnectionError. No ranking, AlphaGenome requests or checker results were produced for that run.
+- The real end-to-end check built a case with 282 candidates in 0.02 s before Carbon returned APIConnectionError. A later preflight in the network-enabled terminal passed Decision 1, Carbon, and the AlphaGenome brain and blood checks.
+- Triage now calls the public population-frequency lookup for every suspect. The candidate rows sent to Decision 1 and Neon omit frequency provenance. A focused regression check and all six checker tests passed.
 - Both credentials are present in the ignored, untracked .env. The two local checkouts use /tmp/genesleuth-data. The home-directory data path was unavailable in the shell sandbox.
 
 ## In progress
 
-- The probe report and this status are in the local b1-integration branch, which is based on the integrated main snapshot.
+- The triage change, probe report, status and design are on the local b1-integration branch, based on the integrated main snapshot.
 - Managed Agents is opt-in. The client-side round trip and the latency and cost targets still need a live confirmation.
 
 ## Blocked
 
-- Gemini calls fail with SDK connection errors in this workspace. The AlphaGenome channel readiness probe times out. GitHub CLI access fails DNS resolution.
-- A real hidden-variant rank, measured provider latency and a live end-to-end result remain unverified.
+- Gemini and AlphaGenome probes in this workspace encountered network failures. GitHub CLI access fails DNS resolution here.
+- A live end-to-end ranking remains unverified.
 
 ## HUMAN TO DO
 
