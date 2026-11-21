@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Investigate a hidden variant in a rare epilepsy case.">
+  <title>GeneSleuth · Variant investigation</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <a href="/" class="brand">Gene<span>Sleuth</span></a>
+      <nav aria-label="Project pages"><a href="/benchmark">Benchmark</a></nav>
+    </div>
+  </header>
+  <main class="workspace">
+    <div class="hero">
+      <h1>Find the hidden variant.</h1>
+      <p>A referral letter, a background genome, and a case to investigate.</p>
+    </div>
+    <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+
+    <section id="picker" class="surface" aria-labelledby="picker-title">
+      <div class="section-head">
+        <div>
+          <h2 id="picker-title" tabindex="-1">Pick a hidden disease variant</h2>
+          <p>A judge picks. The investigator gets the referral and candidate list.</p>
+        </div>
+        <button id="random" class="button primary" type="button">Random case</button>
+      </div>
+      <div class="search-row">
+        <label class="sr-only" for="search">Search case options</label>
+        <input id="search" type="search" placeholder="Search gene, region, or condition" autocomplete="off">
+        <span id="option-count" class="muted" aria-live="polite">Loading cases…</span>
+      </div>
+      <div id="options" class="options" aria-label="Case options"></div>
+    </section>
+
+    <section id="case" class="case-grid" aria-labelledby="case-title" hidden>
+      <div class="surface funnel-panel">
+        <h2 id="case-title" tabindex="-1">Case funnel</h2>
+        <ol id="funnel" class="funnel"></ol>
+        <p id="build-time" class="muted"></p>
+        <button id="investigate" class="button primary" type="button">Investigate</button>
+        <button id="reset" class="button quiet" type="button">New case <kbd>R</kbd></button>
+      </div>
+      <div class="surface letter-panel">
+        <div class="section-head">
+          <h2>Referral letter</h2>
+          <a id="letter-link" href="#" target="_blank" rel="noopener">Open PDF ↗</a>
+        </div>
+        <iframe id="letter" title="Synthetic clinical referral letter"></iframe>
+      </div>
+    </section>
+
+    <section id="investigation" class="surface" aria-labelledby="timeline-title" hidden>
+      <div class="section-head">
+        <h2 id="timeline-title" tabindex="-1">Live investigation</h2>
+        <output id="elapsed" class="elapsed" aria-label="Investigation elapsed time"></output>
+      </div>
+      <dl class="metrics">
+        <div><dt>AlphaGenome calls</dt><dd id="ag-count">0 / 25</dd></div>
+        <div><dt>Tool calls</dt><dd id="tool-count">0</dd></div>
+        <div><dt>Decision 1 triage</dt><dd id="triage-count">—</dd></div>
+        <div><dt>Claims checked</dt><dd id="check-count">0</dd></div>
+        <div><dt>Claims rejected</dt><dd id="reject-count">0</dd></div>
+      </dl>
+      <ul id="timeline" class="timeline" aria-label="Investigation events"></ul>
+      <p id="connection" class="muted" role="status"></p>
+      <div class="trace-footer">
+        <span>Carbon reads and plans. Neon investigates. Hydrogen summarizes. Decision 1 checks the evidence.</span>
+        <output id="cost" aria-label="Estimated Gemini run cost"></output>
+      </div>
+    </section>
+
+    <section id="results" class="surface" aria-labelledby="ranking-title" hidden>
+      <div class="section-head">
+        <div>
+          <h2 id="ranking-title" tabindex="-1">Ranked suspects</h2>
+          <p id="result-time" class="muted"></p>
+        </div>
+        <div class="actions">
+          <a id="download" class="button quiet" href="#">Export evidence</a>
+          <button id="reveal-button" class="button primary" type="button">Reveal hidden variant</button>
+        </div>
+      </div>
+      <div id="phenotypes" class="phenotypes" aria-label="Phenotypes from the letter"></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Candidate ranking">
+        <table>
+          <thead><tr><th scope="col">Rank</th><th scope="col">Gene / variant</th><th scope="col">Region</th>
+            <th scope="col">Consequence</th><th scope="col">Score</th><th scope="col">Best tissue</th>
+            <th scope="col">Evidence</th></tr></thead>
+          <tbody id="ranking"></tbody>
+        </table>
+      </div>
+      <div id="top-plot" class="plot" hidden></div>
+    </section>
+
+    <section id="reveal" class="surface reveal" aria-labelledby="reveal-title" hidden>
+      <p class="eyebrow">The reveal</p>
+      <h2 id="reveal-title" tabindex="-1"></h2>
+      <p id="reveal-detail"></p>
+      <div id="hidden-plot" class="plot"></div>
+    </section>
+  </main>
+
+  <dialog id="look-dialog" aria-labelledby="look-title">
+    <form id="look-form">
+      <h2 id="look-title">Look again</h2>
+      <p id="look-variant" class="muted"></p>
+      <label for="tissue">Tissue or cell type</label>
+      <input id="tissue" type="search" list="tissue-options" placeholder="Search conditions, e.g. cortex" maxlength="160" autocomplete="off">
+      <datalist id="tissue-options"></datalist>
+      <label for="question">Question for the investigator</label>
+      <textarea id="question" rows="3" maxlength="1000" placeholder="What would explain the difference in blood?"></textarea>
+      <p id="look-message" class="muted" role="status"></p>
+      <div class="actions">
+        <button id="look-cancel" class="button quiet" type="button">Cancel</button>
+        <button id="look-submit" class="button primary" type="submit">Continue investigation</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>

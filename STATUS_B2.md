@@ -1,35 +1,34 @@
 # B2 demo and docs
 
-Updated 2026-11-21 13:20:31 EST
+Updated 2026-11-21 13:40:33 EST
 
 ## Done
 
-- Initialized the local checkout of the new repository and committed the byte-identical shared contract.
-- Created an ignored, untracked `.env` and a Python 3.12 virtual environment. The shell had neither API key set.
-- Verified the DNM1 narrative and AlphaGenome use terms against primary sources.
+- Read the five pre-event research briefs and B1's probe report.
+- Built the FastAPI demo routes, judge's picker, referral preview, event timeline, claim evidence, review, reveal, plots, and held-out benchmark page.
+- Added live demo preflight and background-only cache warming scripts.
+- Exercised case creation, PDF delivery, event replay, rejection and revision, review, same-session follow-up, evidence download, reveal, and PNG delivery against Side A and B1 development fixtures.
+- Confirmed the live server and preflight reject fake mode. The live server also rejects automatic data fixture fallback.
+- Drafted the README, design, pitch, video script, and submission checklist. Benchmark results are pending.
 
 ## In progress
 
-- README, design, pitch, video script, and submission checklist drafted. Benchmark and real-runtime sections are pending the other agents' results.
-- Waiting for the five team research briefs before writing server and frontend code.
+- Browser rehearsal at desktop and phone widths.
+- Verify real-case timings and instrument fields against the released A and B1 packages.
 
 ## Blocked
 
-- Shell DNS cannot resolve GitHub, PyPI, or npm. Both push attempts, the dependency install, the Gemini docs MCP install, and the Gemini skill install failed. GitHub's API reported an empty repository at the 1:20 p.m. checkpoint.
-- The sandbox denied creation of `~/genesleuth-data`. This checkout temporarily uses `/tmp/genesleuth-data`.
+- The B2 shell cannot resolve GitHub. Remote main now exists with Side A's work. The B1 environment has both key settings and the provider SDKs installed.
+- Side A's real data bundle and held-out test artifacts are still pending. The B2 sandbox also blocks binding a local HTTP port, so the real local-browser rehearsal must run in a terminal with localhost access.
 
 ## NEEDS FROM B1
 
-- `probes/B/REPORT.md` with confirmed integration shape and selected tissue conditions.
-- The `look_again` signature, how it identifies the existing session, and its result and event shape.
-- Structured trace fields for Decision 1 triage and checker counts, rejected claims and revisions, model fallbacks, elapsed budgets, and run cost.
-- A stable B1 entry point for the Decisions API smoke check.
-- From Side A, the background-only suspect source and the demo asset setup command.
+- Confirm the provider smoke run, observed brain and blood conditions, and live decisions telemetry. The server uses the existing `look_again(case, holdout, previous, request, on_event, profile)` interface.
+- Ensure the demo profile requests submission by 120 seconds. The server applies a 180-second overall timeout and surfaces the failure.
 
 ## HUMAN TO DO
 
-- Populate the two empty API key entries directly in `.env`.
-- If the terminal can reach the network, push the contract using `git push -u origin main` and install `requirements.txt` in the local virtual environment.
-- Create `~/genesleuth-data` and set the same absolute `GENESLEUTH_DATA_DIR` in both agents' checkouts when the shared location is available.
-- Run `npx add-mcp "https://gemini-api-docs-mcp.dev"` and `npx skills add google-gemini/gemini-skills --skill gemini-api-dev` from a network-enabled terminal. Restart the coding session if required.
-- Place all five research briefs under `docs/research/` in this local checkout, or attach them in chat. Side A owns those files.
+- Coordinate Side A's `assets/` and `scripts/data_setup.py` delivery, then run the build and rehearsal in the integrated checkout.
+- Run the live demo with B1's existing ignored `.env` or fill the B2 checkout's ignored `.env` if launching from B2. Use one shared absolute data directory. B2 currently uses `/tmp/genesleuth-data`.
+- If the shell push continues to fail, push the B2 changes from a network-enabled terminal after bringing the Side A and B1 commits together. Do not force-push.
+- Record and submit manually using `SUBMISSION_CHECKLIST.md`.
