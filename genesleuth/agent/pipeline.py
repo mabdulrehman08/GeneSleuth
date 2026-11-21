@@ -13,7 +13,7 @@ from genesleuth import config
 from genesleuth.agent.errors import InvestigationError
 from genesleuth.agent.investigator import Conversation, investigate_tools
 from genesleuth.agent.reader import read_case_plan
-from genesleuth.agent.settings import AG_CONCURRENCY, PROFILE_LIMITS
+from genesleuth.agent.settings import AG_CONCURRENCY, PREFETCH_TOP, PROFILE_LIMITS
 from genesleuth.agent.tools import ToolLedger
 from genesleuth.agent.triage import Triage, candidate_row, triage_candidates
 from genesleuth.alphagenome_client import atlas_scores, list_tissues, score_variant
@@ -145,10 +145,17 @@ async def _run_full(case, holdout, phenotypes, session, profile, emit, previous=
         )
         context = {
             "phenotypes": [item.model_dump(exclude={"source_quote"}) for item in phenotypes],
-            "panel": case.panel_name, "funnel": case.funnel, "first_suspects": session.triage.rows[:50],
+            "panel": case.panel_name, "funnel": case.funnel, "first_suspects": session.triage.rows[:30],
             "candidate_conditions": session.triage.tissues, "routed_condition": session.triage.route,
             "hypothesis_plan": session.plan,
         }
+        if request is None:
+            stage = monotonic()
+            context["prefetched_evidence"] = await ledger.prefetch(
+                [row["variant_id"] for row in session.triage.rows[:PREFETCH_TOP]])
+            emit("tool", "Data", f"Gathered region, frequency and phenotype evidence for the top "
+                 f"{len(context['prefetched_evidence'])} triaged candidates in {monotonic() - stage:.1f} s",
+                 prefetch=True)
         ranked, checked, rejected = await investigate_tools(ledger, context, conversation, followup=request)
         result = InvestigationResult(
             case_id=case.case_id, mode="full", status="ok", ranked=ranked, phenotypes=phenotypes,

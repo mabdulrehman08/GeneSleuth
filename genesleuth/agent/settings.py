@@ -14,8 +14,9 @@ MAX_REFERRAL_BYTES = 20 * 1024 * 1024
 AG_CONCURRENCY = 4
 ATLAS_WORKERS = 10
 TISSUE_CANDIDATES = 12
+PREFETCH_TOP = 10   # candidates whose cheap evidence is gathered in code before Neon starts
 PROFILE_LIMITS = {
-    "demo": {"score_calls": 25, "tool_calls": 45, "thinking": "medium", "submit_after_s": 75, "deadline_s": 135},
+    "demo": {"score_calls": 25, "tool_calls": 70, "thinking": "medium", "submit_after_s": 75, "deadline_s": 135},
     "bench": {"score_calls": 30, "tool_calls": 100, "thinking": "high", "submit_after_s": 300, "deadline_s": 360},
 }
 # Published standard paid-tier prices per one million tokens for the event.

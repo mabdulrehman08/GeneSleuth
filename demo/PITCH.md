@@ -1,6 +1,6 @@
 # GeneSleuth live pitch (3 minutes + 2 minutes of Q&A)
 
-The live run takes about 2.5 to 3 minutes. So the judge picks, you press Investigate immediately, and you narrate the run as it streams. Do not wait for the run before you start talking. Have a recorded run ready in case the venue connection fails, and label it "recorded run".
+The live run now takes about 2 to 2.7 minutes. So the judge picks, you press Investigate immediately, and you narrate the run as it streams. Do not wait for the run before you start talking. Have a recorded run ready in case the venue connection fails, and label it "recorded run".
 
 ## 0:00–0:20 · The wrong tissue
 
@@ -28,7 +28,7 @@ Press **Reveal** and read the actual rank, including a miss if the variant fell 
 
 ## 2:50–3:00 · The honest proof
 
-“On a held-out test of twenty cases, our agent matched the best simple baselines, AlphaGenome alone and a fixed recipe, but did not beat them. With a longer time budget it ranked the hidden variant in the top five in 85% of cases. At demo speed nine of twenty runs did not finish. What GeneSleuth adds is a checked evidence trail for every claim. The full numbers and failures are in the repo.”
+“On a held-out test of twenty cases, our agent matched the best simple baselines, AlphaGenome alone and a fixed recipe, but did not beat them. With a longer time budget it ranked the hidden variant in the top five in 85% of cases. Before a late fix, nine of twenty runs did not finish at demo speed; after it, four live runs all finished. What GeneSleuth adds is a checked evidence trail for every claim. The full numbers and failures are in the repo.”
 
 ## Q&A
 

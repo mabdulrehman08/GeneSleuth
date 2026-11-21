@@ -133,7 +133,7 @@ class ToolLedger:
         """Count all recorded calls to a tool including the prior review ledger."""
         return sum(call.tool == tool for call in self.calls)
 
-    async def execute(self, tool: str, args: dict) -> dict:
+    async def execute(self, tool: str, args: dict, *, counted: bool = True, actor: str | None = None) -> dict:
         """Run a declared lookup and create a citation identifier for its result."""
         if tool == "clinvar_lookup":
             return {"disabled": True, "note": "ClinVar lookup off to prevent leakage"}
@@ -145,9 +145,10 @@ class ToolLedger:
         }.get(tool)
         if handler is None:
             return {"error": "Unknown evidence tool"}
-        if self._closed or self.tool_count >= self.limits["tool_calls"]:
+        if self._closed or (counted and self.tool_count >= self.limits["tool_calls"]):
             return {"error": "budget exhausted"}
-        self.tool_count += 1
+        if counted:
+            self.tool_count += 1
         identifier = f"c{self._next_id}"
         self._next_id += 1
         try:
@@ -162,12 +163,43 @@ class ToolLedger:
         self.calls.append(call)
         self.book[identifier] = call
         step = "alphagenome" if tool in {"alphagenome_score", "alphagenome_plot"} else "tool"
-        actor = "AlphaGenome" if step == "alphagenome" else "Gemini 4 Neon"
+        actor = actor or ("AlphaGenome" if step == "alphagenome" else "Gemini 4 Neon")
         self.emit(step, actor, summary, call_id=identifier, tool=tool, args=args, artifact_path=artifact,
                   n_tool_calls=len(self.calls), n_alphagenome_calls=self.score_count,
                   alphagenome_budget=self.limits["score_calls"], **({"error": data["error"]} if "error" in data else {}))
         return {"call_id": identifier, "result": {key: val for key, val in data.items() if key != "raw_ref"},
                 "summary": summary}
+
+    async def prefetch(self, variant_ids: list[str]) -> list[dict]:
+        """Gather the cheap evidence for the top candidates in code, in parallel, with citable call ids.
+
+        Neon used to fetch this one variant at a time, which spent the whole time budget before any
+        AlphaGenome call. These calls do not count against the model's tool budget.
+        """
+        ids = [item for item in dict.fromkeys(variant_ids) if item in self.variants]
+        genes = list(dict.fromkeys(self.variants[item].gene for item in ids if self.variants[item].gene))
+        jobs = []
+        for identifier in ids:
+            jobs.append(("region", identifier, self.execute("region_context", {"variant_id": identifier},
+                                                           counted=False, actor="Data")))
+            jobs.append(("frequency", identifier, self.execute("population_frequency", {"variant_id": identifier},
+                                                              counted=False, actor="Data")))
+        for gene in genes:
+            jobs.append(("phenotype", gene, self.execute("phenotype_match", {"gene": gene},
+                                                        counted=False, actor="Data")))
+        results = await asyncio.gather(*(job[2] for job in jobs))
+        by_key = {(job[0], job[1]): result for job, result in zip(jobs, results, strict=True)}
+        rows = []
+        for identifier in ids:
+            variant = self.variants[identifier]
+            entry = {"variant_id": identifier, "gene": variant.gene, "region": variant.region}
+            for kind, key in (("region", identifier), ("frequency", identifier), ("phenotype", variant.gene)):
+                result = by_key.get((kind, key))
+                if result and "call_id" in result:
+                    entry[f"{kind}_call_id"] = result["call_id"]
+                    entry[kind] = json.dumps(result["result"], ensure_ascii=False, default=str)[:420]
+            rows.append(entry)
+        return rows
 
     async def _list(self, region=None, gene=None, limit=50, offset=0):
         """Read a bounded page of the triage-ranked suspect list."""
