@@ -167,12 +167,15 @@ def atlas_effects(variants: list[Variant]) -> tuple[dict[str, float], list[str]]
     except Exception:  # noqa: BLE001 - module/function not there yet
         return {v.variant_id: standin_effect(v) for v in variants}, ["atlas_scores(stand-in hash score)"]
     try:
-        got = _parse_atlas(fn(variants), variants)
+        raw = fn(variants)
+        got = _parse_atlas(raw, variants)
     except Exception as e:  # noqa: BLE001
-        return {v.variant_id: standin_effect(v) for v in variants}, [f"atlas_scores(stand-in; client raised {type(e).__name__})"]
+        # the client itself failed: Atlas gave us nothing. Report that; do NOT invent numbers.
+        return {v.variant_id: 0.0 for v in variants}, [f"atlas_no_scores(client raised {type(e).__name__}; effect term = 0)"]
     if not got:
-        return {v.variant_id: standin_effect(v) for v in variants}, ["atlas_scores(stand-in; client returned nothing parseable)"]
-    # variants Atlas could not score get 0, not a made-up number
+        errs = sorted({str(x.get("error"))[:80] for x in raw.values() if isinstance(x, dict) and x.get("error")}) if isinstance(raw, dict) else []
+        return {v.variant_id: 0.0 for v in variants}, [f"atlas_no_scores(Atlas returned no AVI for any suspect{': ' + errs[0] if errs else ''}; effect term = 0)"]
+    # variants Atlas could not score (indels, no row) get 0, not a made-up number
     return {v.variant_id: got.get(v.variant_id, 0.0) for v in variants}, []
 
 

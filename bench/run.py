@@ -35,6 +35,7 @@ RESULTS = ROOT / "bench" / "results"
 ALL_MODES = ["atlas_only", "alphagenome_only", "gemini_only", "full", "fixed_recipe"]
 VALID_MODES = {"full", "alphagenome_only", "atlas_only", "gemini_only", "fixed_recipe"}
 log = logging.getLogger("bench.run")
+RUN_NOTES: dict = {}  # run-level settings copied into every result's meta (e.g. the Gemini timeout override)
 
 
 # ----------------------------------------------------------------------------
@@ -44,6 +45,20 @@ def assert_real_run() -> None:
     """Benchmark runs must never use mocks (builder-guide rule)."""
     if config.FAKE_MODE or os.getenv("FAKE_MODE", "0") == "1":
         raise SystemExit("FAKE_MODE is on: refusing to run a real benchmark with fakes. Unset FAKE_MODE (or use --dry-run).")
+
+
+def warm_gemini_clients() -> None:
+    """Create Agent B's cached Gemini SDK clients once in the main thread.
+
+    Without this, the first concurrent calls from several worker threads race on the lru_cache'd client creation and
+    fail with RuntimeError('Cannot send a request, as the client has been closed.') (reproduced on 3 parallel letter reads).
+    """
+    try:
+        import genesleuth.gemini_clients as gc
+        for version in ("v1", "v1beta"):
+            gc._sdk(version, gc.GEMINI_TIMEOUT_MS)
+    except Exception as e:  # noqa: BLE001
+        print(f"warning: could not pre-create Gemini clients: {type(e).__name__}: {e}", flush=True)
 
 
 def resolve_investigate(dry_run: bool) -> Callable:
@@ -155,7 +170,8 @@ def _existing_status(path: Path) -> Optional[str]:
 # ----------------------------------------------------------------------------
 async def run_split(split: str, modes: list[str], options: list[str], out_root: Path, case_loader: Callable, investigate: Callable,
                     *, profile: str = "bench", concurrency: int = 2, timeout_s: float = 900, dry_run: bool = False,
-                    retry_errors: bool = False, seed_base: int = 1000, letter_type_fn: Optional[Callable[[str], str]] = None) -> dict:
+                    retry_errors: bool = False, seed_base: int = 1000, letter_type_fn: Optional[Callable[[str], str]] = None,
+                    profile_by_mode: Optional[dict] = None, parallel_modes: bool = False) -> dict:
     """Run all modes on all options. Returns {'done': n, 'skipped': n, 'errors': n}."""
     if letter_type_fn is None:
         from bench._cases import detect_letter_type as letter_type_fn
@@ -175,19 +191,20 @@ async def run_split(split: str, modes: list[str], options: list[str], out_root: 
                 return
             hidden_in = any(s.variant_id == truth.hidden_variant_id for s in case.suspects)
             ltype = letter_type_fn(case.referral_pdf)
-            for mode in modes:
+            async def one_mode(mode: str) -> None:
                 path = out / mode / f"{case.case_id}.json"
                 st = _existing_status(path)
                 retried = False
                 if st == "ok" or (st == "error" and not retry_errors):
                     stats["skipped"] += 1
-                    continue
+                    return
                 retried = st == "error"
+                prof = (profile_by_mode or {}).get(mode, profile)
                 t_start = time.time()
-                res, extra = await run_mode(mode, case, truth, holdout, investigate, profile, timeout_s, dry_run)
+                res, extra = await run_mode(mode, case, truth, holdout, investigate, prof, timeout_s, dry_run)
                 meta = {"option_id": oid, "letter_type": ltype, "hidden_in_suspects": hidden_in, "n_suspects": len(case.suspects),
-                        "t_start": t_start, "t_end": time.time(), "profile": profile, "stub": dry_run, "retried": retried,
-                        "standins": extra.get("standins", []), "wall_s": extra["wall_s"], "region": truth.region}
+                        "t_start": t_start, "t_end": time.time(), "profile": prof, "stub": dry_run, "retried": retried,
+                        "standins": extra.get("standins", []), "wall_s": extra["wall_s"], "region": truth.region, **RUN_NOTES}
                 _write(path, {"result": res.model_dump(), "truth": truth.model_dump(), "meta": meta})
                 stats["done"] += 1
                 if res.status == "error":
@@ -196,6 +213,12 @@ async def run_split(split: str, modes: list[str], options: list[str], out_root: 
                 print(f"[{split}] {case.case_id} {truth.gene:8s} {truth.region:8s} {mode:17s} rank={rank if rank else '-':>3} "
                       f"{res.status} {extra['wall_s']:.1f}s ag={res.n_alphagenome_calls}" + (f" ERR {res.error}" if res.error else ""),
                       flush=True)
+
+            if parallel_modes:
+                await asyncio.gather(*(one_mode(m) for m in modes))
+            else:
+                for m in modes:
+                    await one_mode(m)
 
     await asyncio.gather(*(one(i, oid) for i, oid in enumerate(options)))
     return stats
@@ -223,7 +246,9 @@ async def calibrate(modes: list[str], options: list[str], investigate: Callable,
         cost = sum(M.entry_cost(c) for c in calls)
         total += extra["wall_s"]
         print(f"CALIBRATE {mode:17s} {extra['wall_s']:6.1f}s  gemini_requests_logged={n_req}  est_cost=${cost:.2f}  "
-              f"ag_calls={res.n_alphagenome_calls}  status={res.status}", flush=True)
+              f"ag_calls={res.n_alphagenome_calls}  status={res.status}"
+              f"  gemini_requests={res.timings.get('gemini_requests', 'n/a')}  cost_usd={res.timings.get('cost_usd', 'n/a')}"
+              + (f"  ERROR={res.error}" if res.error else ""), flush=True)
     per_case = max(total, 1e-6)
     budget = args.budget_min * 60 * args.concurrency
     print(f"SIZING: one case, all listed modes = {per_case:.0f}s. At concurrency {args.concurrency} and {args.budget_min} min of budget "
@@ -246,6 +271,10 @@ def main(argv=None) -> None:
     ap.add_argument("--calibrate", action="store_true")
     ap.add_argument("--budget-min", type=float, default=30)
     ap.add_argument("--seed-base", type=int, default=1000)
+    ap.add_argument("--full-profile", default=None, help="profile for mode 'full' only (e.g. demo); other arms use --profile")
+    ap.add_argument("--parallel-modes", action="store_true", help="run the arms of one case concurrently (wall time is then contended)")
+    ap.add_argument("--gemini-timeout-ms", type=int, default=None,
+                    help="override Agent B's per-request Gemini timeout for this run (recorded in meta); default = unchanged")
     a = ap.parse_args(argv)
 
     modes = [m.strip() for m in a.modes.split(",") if m.strip()]
@@ -263,10 +292,17 @@ def main(argv=None) -> None:
     logdir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(filename=str(logdir / f"run_{a.split}_{int(time.time())}.log"), level=logging.INFO)
 
+    if a.gemini_timeout_ms:
+        import genesleuth.gemini_clients as gc
+        gc.GEMINI_TIMEOUT_MS = a.gemini_timeout_ms
+        print(f"NOTE: Gemini request timeout overridden to {a.gemini_timeout_ms} ms (recorded in meta)", flush=True)
+    RUN_NOTES["gemini_timeout_ms"] = a.gemini_timeout_ms
+    if not a.dry_run:
+        warm_gemini_clients()
     standins = preflight(modes, a.dry_run, a.allow_standin)
     investigate = resolve_investigate(a.dry_run)
     from bench._cases import list_split_options, load_or_build
-    options = list_split_options(a.split)
+    options = list_split_options(a.split, a.max_cases)
     if a.max_cases:
         options = options[: a.max_cases]
     print(f"split={a.split} cases={len(options)} modes={modes} out={a.out} dry_run={a.dry_run} standins={standins or 'none'}", flush=True)
@@ -276,7 +312,8 @@ def main(argv=None) -> None:
     t0 = time.time()
     stats = asyncio.run(run_split(a.split, modes, options, Path(a.out), load_or_build, investigate, profile=a.profile,
                                   concurrency=a.concurrency, timeout_s=a.timeout_s, dry_run=a.dry_run, retry_errors=a.retry_errors,
-                                  seed_base=a.seed_base))
+                                  seed_base=a.seed_base, parallel_modes=a.parallel_modes,
+                                  profile_by_mode={"full": a.full_profile} if a.full_profile else None))
     print(f"finished in {time.time() - t0:.0f}s: {stats}")
     if a.dry_run:
         print(f"report: python -m bench.report --split {a.split} --results-dir {a.out}")

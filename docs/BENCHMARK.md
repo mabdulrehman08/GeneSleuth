@@ -40,7 +40,7 @@ every other suspect.
 | split | size | purpose |
 |---|---|---|
 | DEV | 5 cases | look at failures, choose at most 3 general fixes (never case-specific) |
-| TEST | 30-40 cases (the exact N is in the results block), stratified by region type | run exactly once after tuning is frozen; the headline numbers |
+| TEST | 20 of the 36 TEST-pool cases, stratified by region stratum (the exact N is in the results block) | run exactly once; the headline numbers |
 | DEMO | the demo picker pool, minus DEV and TEST | live demo only |
 | Named cases | DNM1, MFSD8, PLA2G6 | reported separately, never pooled into TEST |
 
@@ -49,7 +49,15 @@ proof. MFSD8 c.999-556C>G is the leakage-safe case (published after any plausibl
 derived, and it is marked UNVERIFIED and skipped if that fails. PLA2G6 c.2034+355G>A is the expected failure (it has an rsID
 and a non-zero allele frequency, so the frequency filter can remove it); we report honestly what happens.
 
-## Arms (same suspects for every arm)
+**Why 20 and not 36.** The TEST pool has 36 cases (30 non-coding, 6 coding controls). One full-agent case takes about 2.7 minutes
+and we had about 25 minutes of wall-clock time left for the whole TEST run, so we ran 20 of the 36 in a fixed, documented way: keep
+each stratum's share and take the first ones of that stratum in the seeded (seed 42) list (`bench/_cases.py:stratified_subsample`).
+No case was chosen by hand or by looking at results.
+
+**Run settings (stated so they can be criticised).** The full agent ran with the `demo` profile (smaller AlphaGenome budget and a
+shorter deadline than the `bench` profile, which has a 360 s deadline that did not fit the time budget). The other arms ran with the
+`bench` profile. Four cases ran at the same time with their arms in parallel, so the wall-clock times in the report are
+contended, not the standalone speed. Gemini requests per case are in the resource table.
 
 | arm | what it does |
 |---|---|

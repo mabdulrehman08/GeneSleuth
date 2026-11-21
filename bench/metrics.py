@@ -98,9 +98,10 @@ class CaseRecord:
     @property
     def time_s(self) -> Optional[float]:
         if self.result is not None:
-            t = self.result.timings.get("total")
-            if t is not None:
-                return float(t)
+            for key in ("total", "total_s"):
+                t = self.result.timings.get(key)
+                if t is not None:
+                    return float(t)
         w = self.meta.get("wall_s")
         return float(w) if w is not None else None
 
@@ -277,6 +278,11 @@ def cost_per_case(records: list[CaseRecord], calls: list[dict]) -> dict:
     """
     by_id = {r.case_id: [0.0, 0] for r in records}
     approx = False
+    # Agent B records exact per-run cost and request count in result.timings; use those when present.
+    exact = {r.case_id for r in records if r.result is not None and "cost_usd" in r.result.timings}
+    for r in records:
+        if r.case_id in exact:
+            by_id[r.case_id] = [float(r.result.timings["cost_usd"]), float(r.result.timings.get("gemini_requests", 0))]
     windows = [(r.case_id, r.meta.get("t_start"), r.meta.get("t_end")) for r in records
                if isinstance(r.meta.get("t_start"), (int, float)) and isinstance(r.meta.get("t_end"), (int, float))]
     for e in calls:
@@ -284,6 +290,8 @@ def cost_per_case(records: list[CaseRecord], calls: list[dict]) -> dict:
             continue
         c = entry_cost(e)
         cid = e.get("case_id")
+        if cid in exact:
+            continue
         if cid in by_id:
             by_id[cid][0] += c
             by_id[cid][1] += 1
@@ -291,7 +299,7 @@ def cost_per_case(records: list[CaseRecord], calls: list[dict]) -> dict:
         ts = _entry_ts(e)
         if ts is None or not windows:
             continue
-        hit = [w[0] for w in windows if w[1] <= ts <= w[2]]
+        hit = [w[0] for w in windows if w[1] <= ts <= w[2] and w[0] not in exact]
         if hit:
             approx = True
             for h in hit:

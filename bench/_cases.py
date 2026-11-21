@@ -37,8 +37,37 @@ def _ids(items) -> list[str]:
     return out
 
 
-def list_split_options(split: str) -> list[str]:
-    """Option ids (ClinVar variation ids) of a split, in a stable order."""
+def stratified_subsample(items: list[dict], n: int) -> list[str]:
+    """Pick n option ids keeping each stratum's share (largest-remainder), taking the first ones of each stratum in list order.
+
+    Deterministic: the split lists are already seeded (seed 42), so 'first k per stratum' is a fixed, documented selection.
+    """
+    if n >= len(items):
+        return _ids(items)
+    groups: dict[str, list[dict]] = {}
+    for it in items:
+        groups.setdefault(str(it.get("stratum") or it.get("region") or "all"), []).append(it)
+    total = len(items)
+    quota = {k: n * len(v) / total for k, v in groups.items()}
+    take = {k: int(q) for k, q in quota.items()}
+    for k in sorted(quota, key=lambda k: (-(quota[k] - take[k]), k))[: n - sum(take.values())]:
+        take[k] += 1
+    out: list[dict] = []
+    for k in sorted(groups):
+        out += groups[k][: take[k]]
+    return _ids(out)
+
+
+def list_split_options(split: str, max_cases: Optional[int] = None) -> list[str]:
+    """Option ids (ClinVar variation ids) of a split, in a stable order; max_cases subsamples stratified by region stratum."""
+    if max_cases and not config.FAKE_MODE:
+        try:
+            from genesleuth.data import splits as S
+            items = S.load_splits().get(split)
+            if isinstance(items, list) and items and isinstance(items[0], dict):
+                return stratified_subsample(items, max_cases)
+        except ImportError:
+            pass
     if config.FAKE_MODE:
         from genesleuth.data import api
         ids = [o.option_id for o in api.list_demo_options()]

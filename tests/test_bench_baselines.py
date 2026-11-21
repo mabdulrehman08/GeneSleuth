@@ -40,12 +40,21 @@ def test_recipe_weights_and_ranking():
     assert res.n_alphagenome_calls == 0
 
 
-def test_standin_is_flagged_when_client_missing():
-    vs = [var(1, "SCN1A", "intron", "intron_variant")]
-    eff, flags = B.atlas_effects(vs)  # no alphagenome_client on this branch yet, or a real one -> either path is valid
-    assert set(eff) == {vs[0].variant_id}
-    if flags:
-        assert "stand-in" in flags[0]
+def test_atlas_with_no_scores_is_reported_not_faked(monkeypatch):
+    from genesleuth import alphagenome_client as agc
+    vs = [var(1, "SCN1A", "intron", "intron_variant"), var(2, "KCNQ2", "coding", "missense_variant")]
+    monkeypatch.setattr(agc, "atlas_scores", lambda variants: {v.variant_id: {"avi": None, "error": "No variant-matched AVI result returned"} for v in variants})
+    eff, flags = B.atlas_effects(vs)
+    assert set(eff.values()) == {0.0} and "atlas_no_scores" in flags[0] and "No variant-matched" in flags[0]
+    monkeypatch.setattr(agc, "atlas_scores", lambda variants: {vs[0].variant_id: {"avi": 12.5}})
+    eff, flags = B.atlas_effects(vs)
+    assert eff == {vs[0].variant_id: 12.5, vs[1].variant_id: 0.0} and flags == []
+
+    def boom(variants):
+        raise RuntimeError("down")
+    monkeypatch.setattr(agc, "atlas_scores", boom)
+    eff, flags = B.atlas_effects(vs)
+    assert set(eff.values()) == {0.0} and "RuntimeError" in flags[0]
 
 
 def test_gene_level_clinvar_excludes_holdout(tmp_path, monkeypatch):
