@@ -1,0 +1,1328 @@
+{
+ "seed": 42,
+ "dev": [
+  {
+   "option_id": "3384190",
+   "split": "dev",
+   "gene": "ALDH7A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Pyridoxine-dependent epilepsy",
+   "variant_id": "chr5-126575417-T-G",
+   "named": null
+  },
+  {
+   "option_id": "1320153",
+   "split": "dev",
+   "gene": "SLC2A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Encephalopathy due to GLUT1 deficiency",
+   "variant_id": "chr1-42929783-G-C",
+   "named": null
+  },
+  {
+   "option_id": "1012387",
+   "split": "dev",
+   "gene": "NPRL3",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Epilepsy, familial focal, with variable foci 3",
+   "variant_id": "chr16-119256-C-T",
+   "named": null
+  },
+  {
+   "option_id": "1028343",
+   "split": "dev",
+   "gene": "TSC2",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2056194-A-T",
+   "named": null
+  },
+  {
+   "option_id": "2033647",
+   "split": "dev",
+   "gene": "DEPDC5",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Familial focal epilepsy with variable foci",
+   "variant_id": "chr22-31754980-G-A",
+   "named": null
+  }
+ ],
+ "test": [
+  {
+   "option_id": "571229",
+   "split": "test",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-165996008-C-G",
+   "named": null
+  },
+  {
+   "option_id": "49429",
+   "split": "test",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "TSC2-related disorder",
+   "variant_id": "chr16-2088144-G-A",
+   "named": null
+  },
+  {
+   "option_id": "420684",
+   "split": "test",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-166056406-C-G",
+   "named": null
+  },
+  {
+   "option_id": "388832",
+   "split": "test",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2053457-G-C",
+   "named": null
+  },
+  {
+   "option_id": "521457",
+   "split": "test",
+   "gene": "SLC2A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "SLC2A1-related disorder",
+   "variant_id": "chr1-42929791-C-T",
+   "named": null
+  },
+  {
+   "option_id": "1731305",
+   "split": "test",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 1",
+   "variant_id": "chr9-132910999-T-C",
+   "named": null
+  },
+  {
+   "option_id": "21815",
+   "split": "test",
+   "gene": "KCNQ2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr20-63408542-G-T",
+   "named": null
+  },
+  {
+   "option_id": "2683924",
+   "split": "test",
+   "gene": "STXBP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 4",
+   "variant_id": "chr9-127660113-G-A",
+   "named": null
+  },
+  {
+   "option_id": "4530663",
+   "split": "test",
+   "gene": "CACNA1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Episodic ataxia type 2",
+   "variant_id": "chr19-13262852-G-C",
+   "named": null
+  },
+  {
+   "option_id": "2949237",
+   "split": "test",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 2",
+   "variant_id": "chrX-18581885-C-G",
+   "named": null
+  },
+  {
+   "option_id": "1020776",
+   "split": "test",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Angelman syndrome-like",
+   "variant_id": "chrX-18584358-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1469504",
+   "split": "test",
+   "gene": "STX1B",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Generalized epilepsy with febrile seizures plus, type 9",
+   "variant_id": "chr16-30997500-A-G",
+   "named": null
+  },
+  {
+   "option_id": "64876",
+   "split": "test",
+   "gene": "TSC2",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2081799-G-A",
+   "named": null
+  },
+  {
+   "option_id": "2752188",
+   "split": "test",
+   "gene": "MEF2C",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Neurodevelopmental disorder with hypotonia, stereotypic hand movements, and impaired language",
+   "variant_id": "chr5-88804596-A-G",
+   "named": null
+  },
+  {
+   "option_id": "474397",
+   "split": "test",
+   "gene": "CHD2",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Developmental and epileptic encephalopathy 94",
+   "variant_id": "chr15-92939719-G-C",
+   "named": null
+  },
+  {
+   "option_id": "1068168",
+   "split": "test",
+   "gene": "NPRL3",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Epilepsy, familial focal, with variable foci 3",
+   "variant_id": "chr16-93327-T-A",
+   "named": null
+  },
+  {
+   "option_id": "1489402",
+   "split": "test",
+   "gene": "GRIN2A",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Landau-Kleffner syndrome",
+   "variant_id": "chr16-9822263-C-G",
+   "named": null
+  },
+  {
+   "option_id": "4532177",
+   "split": "test",
+   "gene": "CDKL5",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Developmental and epileptic encephalopathy, 2",
+   "variant_id": "chrX-18510818-A-C",
+   "named": null
+  },
+  {
+   "option_id": "641534",
+   "split": "test",
+   "gene": "DEPDC5",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Familial focal epilepsy with variable foci",
+   "variant_id": "chr22-31802840-T-G",
+   "named": null
+  },
+  {
+   "option_id": "4719128",
+   "split": "test",
+   "gene": "NPRL3",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Epilepsy, familial focal, with variable foci 3",
+   "variant_id": "chr16-98144-C-A",
+   "named": null
+  },
+  {
+   "option_id": "48863",
+   "split": "test",
+   "gene": "TSC1",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr9-132905580-C-T",
+   "named": null
+  },
+  {
+   "option_id": "1071252",
+   "split": "test",
+   "gene": "TSC1",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Tuberous sclerosis 1",
+   "variant_id": "chr9-132912281-C-A",
+   "named": null
+  },
+  {
+   "option_id": "4683110",
+   "split": "test",
+   "gene": "SCN8A",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Cognitive impairment with or without cerebellar ataxia",
+   "variant_id": "chr12-51705416-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1202675",
+   "split": "test",
+   "gene": "MEF2C",
+   "region": "utr5",
+   "stratum": "utr_promoter",
+   "condition": "MEF2C-related disorder",
+   "variant_id": "chr5-88823796-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1272071",
+   "split": "test",
+   "gene": "MEF2C",
+   "region": "utr5",
+   "stratum": "utr_promoter",
+   "condition": "Neurodevelopmental disorder with hypotonia, stereotypic hand movements, and impaired language",
+   "variant_id": "chr5-88823814-G-A",
+   "named": null
+  },
+  {
+   "option_id": "932548",
+   "split": "test",
+   "gene": "PRRT2",
+   "region": "utr3",
+   "stratum": "utr_promoter",
+   "condition": "Inborn genetic diseases",
+   "variant_id": "chr16-29814299-G-A",
+   "named": null
+  },
+  {
+   "option_id": "953868",
+   "split": "test",
+   "gene": "CACNA1A",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Developmental and epileptic encephalopathy, 42",
+   "variant_id": "chr19-13257552-C-G",
+   "named": null
+  },
+  {
+   "option_id": "1027785",
+   "split": "test",
+   "gene": "SCN1A",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-166045042-C-G",
+   "named": null
+  },
+  {
+   "option_id": "369801",
+   "split": "test",
+   "gene": "KCNQ2",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Seizures, benign familial neonatal, 1",
+   "variant_id": "chr20-63414087-C-T",
+   "named": null
+  },
+  {
+   "option_id": "933614",
+   "split": "test",
+   "gene": "SLC13A5",
+   "region": "splice",
+   "stratum": "splice_canonical",
+   "condition": "Developmental and epileptic encephalopathy, 25",
+   "variant_id": "chr17-6706780-T-C",
+   "named": null
+  },
+  {
+   "option_id": "2938697",
+   "split": "test",
+   "gene": "CACNA1A",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "Episodic ataxia type 2",
+   "variant_id": "chr19-13212719-G-A",
+   "named": null
+  },
+  {
+   "option_id": "5037758",
+   "split": "test",
+   "gene": "SCN1A",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166037927-C-T",
+   "named": null
+  },
+  {
+   "option_id": "984745",
+   "split": "test",
+   "gene": "CHD2",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "Developmental and epileptic encephalopathy 94",
+   "variant_id": "chr15-92956583-C-A",
+   "named": null
+  },
+  {
+   "option_id": "48923",
+   "split": "test",
+   "gene": "TSC1",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr9-132902746-C-T",
+   "named": null
+  },
+  {
+   "option_id": "17995",
+   "split": "test",
+   "gene": "ALDH7A1",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "ALDH7A1-related disorder",
+   "variant_id": "chr5-126583997-G-A",
+   "named": null
+  },
+  {
+   "option_id": "495236",
+   "split": "test",
+   "gene": "CDKL5",
+   "region": "coding",
+   "stratum": "coding",
+   "condition": "Developmental and epileptic encephalopathy, 2",
+   "variant_id": "chrX-18581942-G-A",
+   "named": null
+  }
+ ],
+ "demo": [
+  {
+   "option_id": "280045",
+   "split": "demo",
+   "gene": "ALDH7A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "ALDH7A1-related disorder",
+   "variant_id": "chr5-126549924-C-T",
+   "named": null
+  },
+  {
+   "option_id": "465326",
+   "split": "demo",
+   "gene": "ALDH7A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Inborn genetic diseases",
+   "variant_id": "chr5-126595004-T-A",
+   "named": null
+  },
+  {
+   "option_id": "2136325",
+   "split": "demo",
+   "gene": "ALDH7A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Pyridoxine-dependent epilepsy",
+   "variant_id": "chr5-126582846-C-T",
+   "named": null
+  },
+  {
+   "option_id": "2734775",
+   "split": "demo",
+   "gene": "ALDH7A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Pyridoxine-dependent epilepsy",
+   "variant_id": "chr5-126568254-C-T",
+   "named": null
+  },
+  {
+   "option_id": "4856390",
+   "split": "demo",
+   "gene": "CACNA1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Migraine, familial hemiplegic, 1",
+   "variant_id": "chr19-13261445-C-G",
+   "named": null
+  },
+  {
+   "option_id": "156660",
+   "split": "demo",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "CDKL5 disorder",
+   "variant_id": "chrX-18510859-G-A",
+   "named": null
+  },
+  {
+   "option_id": "871041",
+   "split": "demo",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 2",
+   "variant_id": "chrX-18581955-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1073273",
+   "split": "demo",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Angelman syndrome-like",
+   "variant_id": "chrX-18584357-A-G",
+   "named": null
+  },
+  {
+   "option_id": "2036013",
+   "split": "demo",
+   "gene": "CDKL5",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 2",
+   "variant_id": "chrX-18584260-C-G",
+   "named": null
+  },
+  {
+   "option_id": "1370206",
+   "split": "demo",
+   "gene": "CHD2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy 94",
+   "variant_id": "chr15-92924555-A-G",
+   "named": null
+  },
+  {
+   "option_id": "1502405",
+   "split": "demo",
+   "gene": "CHD2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy 94",
+   "variant_id": "chr15-92941819-C-A",
+   "named": null
+  },
+  {
+   "option_id": "1803017",
+   "split": "demo",
+   "gene": "CHD2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy 94",
+   "variant_id": "chr15-93000643-A-G",
+   "named": null
+  },
+  {
+   "option_id": "429529",
+   "split": "demo",
+   "gene": "DNM1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 31A",
+   "variant_id": "chr9-128226027-G-A",
+   "named": null
+  },
+  {
+   "option_id": "4855726",
+   "split": "demo",
+   "gene": "DNM1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 31",
+   "variant_id": "chr9-128225994-G-A",
+   "named": "DNM1_anchor"
+  },
+  {
+   "option_id": "1803032",
+   "split": "demo",
+   "gene": "GABRG2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 74",
+   "variant_id": "chr5-162101321-A-G",
+   "named": null
+  },
+  {
+   "option_id": "2948614",
+   "split": "demo",
+   "gene": "GABRG2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "EPILEPSY, CHILDHOOD ABSENCE, SUSCEPTIBILITY TO, 2",
+   "variant_id": "chr5-162149319-T-C",
+   "named": null
+  },
+  {
+   "option_id": "426965",
+   "split": "demo",
+   "gene": "GNAO1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr16-56351376-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1709128",
+   "split": "demo",
+   "gene": "KCNQ2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 7",
+   "variant_id": "chr20-63413587-G-T",
+   "named": null
+  },
+  {
+   "option_id": "156048",
+   "split": "demo",
+   "gene": "MECP2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Rett syndrome",
+   "variant_id": "chrX-154032563-G-C",
+   "named": null
+  },
+  {
+   "option_id": "156068",
+   "split": "demo",
+   "gene": "MECP2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Paediatric disorders",
+   "variant_id": "chrX-154031453-G-C",
+   "named": null
+  },
+  {
+   "option_id": "1320147",
+   "split": "demo",
+   "gene": "MEF2C",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Neurodevelopmental disorder with hypotonia, stereotypic hand movements, and impaired language",
+   "variant_id": "chr5-88804593-C-G",
+   "named": null
+  },
+  {
+   "option_id": "4813360",
+   "split": "demo",
+   "gene": "MEF2C",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Neurodevelopmental disorder with hypotonia, stereotypic hand movements, and impaired language",
+   "variant_id": "chr5-88882950-C-G",
+   "named": null
+  },
+  {
+   "option_id": "648238",
+   "split": "demo",
+   "gene": "PCDH19",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 9",
+   "variant_id": "chrX-100342081-T-C",
+   "named": null
+  },
+  {
+   "option_id": "1810261",
+   "split": "demo",
+   "gene": "PNPO",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Pyridoxal phosphate-responsive seizures",
+   "variant_id": "chr17-47944720-G-A",
+   "named": null
+  },
+  {
+   "option_id": "587863",
+   "split": "demo",
+   "gene": "POLG",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "POLG-related disorder",
+   "variant_id": "chr15-89319225-T-A",
+   "named": null
+  },
+  {
+   "option_id": "3767174",
+   "split": "demo",
+   "gene": "POLG",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Sensory ataxic neuropathy, dysarthria, and ophthalmoparesis",
+   "variant_id": "chr15-89317539-G-C",
+   "named": null
+  },
+  {
+   "option_id": "189890",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-165999719-T-G",
+   "named": null
+  },
+  {
+   "option_id": "189925",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-166073353-C-G",
+   "named": null
+  },
+  {
+   "option_id": "189936",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-166045040-T-C",
+   "named": null
+  },
+  {
+   "option_id": "189938",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Migraine, familial hemiplegic, 3",
+   "variant_id": "chr2-166039420-T-A",
+   "named": null
+  },
+  {
+   "option_id": "189958",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166042289-A-T",
+   "named": null
+  },
+  {
+   "option_id": "190004",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166054635-T-G",
+   "named": null
+  },
+  {
+   "option_id": "190009",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166051705-A-C",
+   "named": null
+  },
+  {
+   "option_id": "217242",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Early-infantile DEE",
+   "variant_id": "chr2-166073353-C-T",
+   "named": null
+  },
+  {
+   "option_id": "224116",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166007268-C-G",
+   "named": null
+  },
+  {
+   "option_id": "408931",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "SCN1A-related disorder",
+   "variant_id": "chr2-166013739-C-T",
+   "named": null
+  },
+  {
+   "option_id": "801823",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166056512-T-G",
+   "named": null
+  },
+  {
+   "option_id": "975975",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-165995995-T-C",
+   "named": null
+  },
+  {
+   "option_id": "983104",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Generalized epilepsy with febrile seizures plus, type 2",
+   "variant_id": "chr2-166002468-T-G",
+   "named": null
+  },
+  {
+   "option_id": "1685433",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Generalized epilepsy with febrile seizures plus, type 2",
+   "variant_id": "chr2-166039420-T-C",
+   "named": null
+  },
+  {
+   "option_id": "1803057",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166002757-A-C",
+   "named": null
+  },
+  {
+   "option_id": "4538527",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166060716-G-C",
+   "named": null
+  },
+  {
+   "option_id": "4755498",
+   "split": "demo",
+   "gene": "SCN1A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Severe myoclonic epilepsy in infancy",
+   "variant_id": "chr2-166040800-G-C",
+   "named": null
+  },
+  {
+   "option_id": "207002",
+   "split": "demo",
+   "gene": "SCN2A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Seizures, benign familial infantile, 3",
+   "variant_id": "chr2-165380738-A-G",
+   "named": null
+  },
+  {
+   "option_id": "854893",
+   "split": "demo",
+   "gene": "SCN2A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Seizures, benign familial infantile, 3",
+   "variant_id": "chr2-165377591-T-A",
+   "named": null
+  },
+  {
+   "option_id": "4850096",
+   "split": "demo",
+   "gene": "SCN2A",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 11",
+   "variant_id": "chr2-165312093-G-A",
+   "named": null
+  },
+  {
+   "option_id": "3376227",
+   "split": "demo",
+   "gene": "SLC2A1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Hereditary cryohydrocytosis with reduced stomatin",
+   "variant_id": "chr1-42929792-G-T",
+   "named": null
+  },
+  {
+   "option_id": "1098290",
+   "split": "demo",
+   "gene": "STXBP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 4",
+   "variant_id": "chr9-127673264-A-C",
+   "named": null
+  },
+  {
+   "option_id": "1709566",
+   "split": "demo",
+   "gene": "STXBP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 4",
+   "variant_id": "chr9-127676758-G-C",
+   "named": null
+  },
+  {
+   "option_id": "4291884",
+   "split": "demo",
+   "gene": "STXBP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 4",
+   "variant_id": "chr9-127663356-A-T",
+   "named": null
+  },
+  {
+   "option_id": "224094",
+   "split": "demo",
+   "gene": "SYNGAP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "SYNGAP1-related disorder",
+   "variant_id": "chr6-33446569-G-A",
+   "named": null
+  },
+  {
+   "option_id": "537000",
+   "split": "demo",
+   "gene": "SYNGAP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Intellectual developmental disorder, autosomal dominant 5",
+   "variant_id": "chr6-33446566-G-A",
+   "named": null
+  },
+  {
+   "option_id": "2858674",
+   "split": "demo",
+   "gene": "SYNGAP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Intellectual developmental disorder, autosomal dominant 5",
+   "variant_id": "chr6-33440726-C-G",
+   "named": null
+  },
+  {
+   "option_id": "4853974",
+   "split": "demo",
+   "gene": "SYNGAP1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Intellectual developmental disorder, autosomal dominant 5",
+   "variant_id": "chr6-33438924-G-A",
+   "named": null
+  },
+  {
+   "option_id": "91399",
+   "split": "demo",
+   "gene": "TBC1D24",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "DOORS syndrome",
+   "variant_id": "chr16-2499425-G-A",
+   "named": null
+  },
+  {
+   "option_id": "48882",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Hereditary cancer-predisposing syndrome",
+   "variant_id": "chr9-132903822-T-C",
+   "named": null
+  },
+  {
+   "option_id": "49079",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr9-132921451-T-C",
+   "named": null
+  },
+  {
+   "option_id": "49093",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Hereditary cancer-predisposing syndrome",
+   "variant_id": "chr9-132921360-T-C",
+   "named": null
+  },
+  {
+   "option_id": "581656",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr9-132900348-T-C",
+   "named": null
+  },
+  {
+   "option_id": "1511364",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 1",
+   "variant_id": "chr9-132925582-C-G",
+   "named": null
+  },
+  {
+   "option_id": "3778883",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "utr5",
+   "stratum": "utr_promoter",
+   "condition": "Tuberous sclerosis 1",
+   "variant_id": "chr9-132924919-C-G",
+   "named": null
+  },
+  {
+   "option_id": "3780751",
+   "split": "demo",
+   "gene": "TSC1",
+   "region": "utr5",
+   "stratum": "utr_promoter",
+   "condition": "Lymphangiomyomatosis",
+   "variant_id": "chr9-132924919-C-T",
+   "named": null
+  },
+  {
+   "option_id": "49345",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2088030-A-G",
+   "named": null
+  },
+  {
+   "option_id": "49396",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Lymphangiomyomatosis",
+   "variant_id": "chr16-2060655-G-A",
+   "named": null
+  },
+  {
+   "option_id": "49877",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2055524-G-A",
+   "named": null
+  },
+  {
+   "option_id": "49923",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "TSC2-related disorder",
+   "variant_id": "chr16-2057459-C-T",
+   "named": null
+  },
+  {
+   "option_id": "50192",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Lymphangiomyomatosis",
+   "variant_id": "chr16-2048758-G-A",
+   "named": null
+  },
+  {
+   "option_id": "64988",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2054445-G-A",
+   "named": null
+  },
+  {
+   "option_id": "65101",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2076175-G-A",
+   "named": null
+  },
+  {
+   "option_id": "65210",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2071507-C-G",
+   "named": null
+  },
+  {
+   "option_id": "65256",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2060656-G-A",
+   "named": null
+  },
+  {
+   "option_id": "65300",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Hereditary cancer-predisposing syndrome",
+   "variant_id": "chr16-2076482-C-G",
+   "named": null
+  },
+  {
+   "option_id": "373972",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Lymphangiomyomatosis",
+   "variant_id": "chr16-2088143-A-C",
+   "named": null
+  },
+  {
+   "option_id": "430442",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Lymphangiomyomatosis",
+   "variant_id": "chr16-2074394-G-C",
+   "named": null
+  },
+  {
+   "option_id": "489133",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Hereditary cancer-predisposing syndrome",
+   "variant_id": "chr16-2063058-G-C",
+   "named": null
+  },
+  {
+   "option_id": "570837",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis syndrome",
+   "variant_id": "chr16-2077476-G-A",
+   "named": null
+  },
+  {
+   "option_id": "664388",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2065640-G-C",
+   "named": null
+  },
+  {
+   "option_id": "930216",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2060942-G-T",
+   "named": null
+  },
+  {
+   "option_id": "1069935",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2048758-G-C",
+   "named": null
+  },
+  {
+   "option_id": "1476749",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2088142-G-T",
+   "named": null
+  },
+  {
+   "option_id": "1700634",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2064431-A-C",
+   "named": null
+  },
+  {
+   "option_id": "1700636",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2056072-G-A",
+   "named": null
+  },
+  {
+   "option_id": "1801724",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2076175-G-C",
+   "named": null
+  },
+  {
+   "option_id": "1805434",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2079673-A-G",
+   "named": null
+  },
+  {
+   "option_id": "2844238",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2080796-C-G",
+   "named": null
+  },
+  {
+   "option_id": "3704471",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2088143-A-T",
+   "named": null
+  },
+  {
+   "option_id": "3721949",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "utr5",
+   "stratum": "utr_promoter",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2056193-C-G",
+   "named": null
+  },
+  {
+   "option_id": "3777070",
+   "split": "demo",
+   "gene": "TSC2",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Tuberous sclerosis 2",
+   "variant_id": "chr16-2053339-C-G",
+   "named": null
+  },
+  {
+   "option_id": "4294336",
+   "split": "demo",
+   "gene": "WWOX",
+   "region": "intron",
+   "stratum": "intron",
+   "condition": "Developmental and epileptic encephalopathy, 28",
+   "variant_id": "chr16-78353056-G-A",
+   "named": null
+  }
+ ],
+ "counts": {
+  "eligible_total": 5818,
+  "eligible_noncoding": 1054,
+  "dev": 5,
+  "test": 36,
+  "test_noncoding": 30,
+  "test_coding": 6,
+  "demo": 89
+ },
+ "test_by_stratum": {
+  "intron": 11,
+  "splice_canonical": 16,
+  "utr_promoter": 3,
+  "coding": 6
+ },
+ "dev_by_stratum": {
+  "intron": 2,
+  "splice_canonical": 3
+ }
+}
