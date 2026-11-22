@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeneSleuth | AI-Powered Non-Coding Variant Triage</title>
+  <link rel="stylesheet" href="/static/styles.css" onerror="this.onerror=null;this.href='styles.css'">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Ambient DNA Helix Canvas Background -->
+  <canvas id="dna-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-container">
+    <!-- Top Bar with 5-Step Glowing Pipeline Navigation -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-logo" aria-hidden="true">GS</div>
+        <div>
+          <div class="brand-title">GeneSleuth <span class="brand-subtitle">Clinical Genomics</span></div>
+        </div>
+      </div>
+
+      <!-- 5-Step glowing pipeline -->
+      <nav class="pipeline-nav" aria-label="Investigation Pipeline Steps">
+        <button class="step-item active" data-screen="picker" id="nav-step-1">
+          <span class="step-number">1</span>
+          <span>Picker</span>
+        </button>
+        <button class="step-item" data-screen="case_letter" id="nav-step-2">
+          <span class="step-number">2</span>
+          <span>Letter & Funnel</span>
+        </button>
+        <button class="step-item" data-screen="live_stream" id="nav-step-3">
+          <span class="step-number">3</span>
+          <span>Live Investigation</span>
+        </button>
+        <button class="step-item" data-screen="reveal" id="nav-step-4">
+          <span class="step-number">4</span>
+          <span>Reveal & Review</span>
+        </button>
+        <button class="step-item" data-screen="proof" id="nav-step-5">
+          <span class="step-number">5</span>
+          <span>Benchmark Proof</span>
+        </button>
+      </nav>
+
+      <!-- Action Utilities -->
+      <div class="header-actions">
+        <div id="dev-fixture-badge" class="dev-badge" style="display: none;" title="Dev Fixture Mode (?dev=1)">
+          ● FIXTURE DATA
+        </div>
+        <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Theme (T)" aria-label="Toggle Theme">
+          🌓
+        </button>
+        <button id="help-toggle" class="btn-icon" title="Keyboard Shortcuts (?)" aria-label="Help">
+          ?
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA: 5 SCREENS -->
+    <main id="main-content">
+
+      <!-- ==========================================================================
+           SCREEN 1: PICKER
+           ========================================================================== -->
+      <section id="screen-picker" class="screen active">
+        <div class="screen-header">
+          <h1 class="screen-title">Select Clinical Variant</h1>
+          <p class="screen-desc">Choose from 169 real disease variants across the 58-gene epilepsy panel, or trigger a random blind triage.</p>
+        </div>
+
+        <div class="picker-container">
+          <!-- Main Selection Area -->
+          <div class="picker-main">
+            <!-- Filter by Region -->
+            <div class="filter-bar" id="region-filter-bar">
+              <button class="filter-chip active" data-region="all">All Regions (169)</button>
+              <button class="filter-chip" data-region="intron">Deep-Intronic</button>
+              <button class="filter-chip" data-region="splice">Splice Junction</button>
+              <button class="filter-chip" data-region="promoter">Promoter</button>
+              <button class="filter-chip" data-region="utr5">5' UTR</button>
+              <button class="filter-chip" data-region="utr3">3' UTR</button>
+              <button class="filter-chip" data-region="coding">Coding Controls</button>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="variant-search" class="search-input" placeholder="Search by gene (e.g. DNM1, SCN1A), condition, or region..." autocomplete="off">
+            </div>
+
+            <!-- Options Grid -->
+            <div class="options-grid" id="options-grid" role="listbox" aria-label="Disease Variant Options">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Sidebar: Random & Presets -->
+          <aside class="picker-sidebar">
+            <div class="random-pick-box">
+              <button id="btn-random-pick" class="btn-random" title="Pick Random Candidate (R)">
+                🎲 RANDOM PICK
+              </button>
+              <p style="font-size: 14px; color: var(--text-muted);">Simulates an unbiased blind clinical case from 1000 Genomes spiked with a pathogenic non-coding variant.</p>
+            </div>
+
+            <div class="demo-presets-card">
+              <div style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--text-muted);">
+                Showcase Presets
+              </div>
+
+              <button class="preset-btn" data-option="clinvar-849201">
+                <strong>★ Anchor: DNM1 c.1335+1605G>A</strong>
+                <span>Deep-intronic cryptic splice in brain; missed in blood RNA tests.</span>
+              </button>
+
+              <button class="preset-btn" data-option="clinvar-921440">
+                <strong>★ Holdout: MFSD8 c.999-556C>G</strong>
+                <span>Unseen post-cutoff non-coding holdout (Oct 2026).</span>
+              </button>
+
+              <button class="preset-btn" data-option="clinvar-312094">
+                <strong>★ Honest Failure: PLA2G6</strong>
+                <span>High AF frequency filter drop demonstration.</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 2: CASE + LETTER + FUNNEL
+           ========================================================================== -->
+      <section id="screen-case_letter" class="screen">
+        <div class="screen-header">
+          <h1 class="screen-title">Patient Referral & Candidate Funnel</h1>
+          <p class="screen-desc">Original clinical referral letter matched against background 1000 Genomes panel variants.</p>
+        </div>
+
+        <div class="case-container">
+          <!-- Left: Clinical Referral Letter -->
+          <div class="letter-panel">
+            <div class="letter-header">
+              <div class="letter-badge">Clinical Documentation</div>
+              <h2 style="font-size: 22px; font-weight: 800;">Genetic Epilepsy Diagnostic Referral</h2>
+              <div class="letter-meta-grid">
+                <div>Case ID: <strong id="case-id-display">d9a7f340be21</strong></div>
+                <div>Background Sample: <strong id="sample-id-display">NA12878_GRCh38</strong></div>
+                <div>Patient: <strong>GS-2026-9041 (4y 2m Male)</strong></div>
+                <div>Panel: <strong id="panel-name-display">Genetic Epilepsy (58 genes, ±10 kb)</strong></div>
+              </div>
+            </div>
+
+            <div class="letter-body" id="clinical-letter-content">
+              <!-- Referral letter text loaded here -->
+            </div>
+          </div>
+
+          <!-- Right: Animated Filter Funnel -->
+          <div class="funnel-panel">
+            <div>
+              <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 0.5rem;">Deterministic Filter Funnel</h2>
+              <p style="font-size: 15px; color: var(--text-muted);">Rigorous filtering of 1000 Genomes background variants using gnomAD v4.1 population frequencies and HPO phenotype relevance.</p>
+
+              <div class="funnel-container">
+                <!-- Funnel Stage 1 -->
+                <div class="funnel-stage stage-1">
+                  <div class="funnel-info">
+                    <div class="funnel-title">Panel Region Variants</div>
+                    <div class="funnel-subtitle">58 epilepsy genes (exons + introns ±10kb)</div>
+                  </div>
+                  <div class="funnel-number" id="funnel-total">13,049</div>
+                </div>
+
+                <div class="funnel-drop-arrow">▼ 93.8% population common variants removed</div>
+
+                <!-- Funnel Stage 2 -->
+                <div class="funnel-stage stage-2">
+                  <div class="funnel-info">
+                    <div class="funnel-title">Rare Variants</div>
+                    <div class="funnel-subtitle">gnomAD v4.1 allele frequency &lt; 0.01%</div>
+                  </div>
+                  <div class="funnel-number" id="funnel-rare">812</div>
+                </div>
+
+                <div class="funnel-drop-arrow">▼ 74.8% non-phenotype / neutral dropped</div>
+
+                <!-- Funnel Stage 3 -->
+                <div class="funnel-stage stage-3">
+                  <div class="funnel-info">
+                    <div class="funnel-title">Candidate Suspects</div>
+                    <div class="funnel-subtitle">Shuffled pool sent to Gemini & AlphaGenome</div>
+                  </div>
+                  <div class="funnel-number" id="funnel-suspects">205</div>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-start-investigation" class="btn-start-investigation" title="Start Live Investigation (Space)">
+              ⚡ START INVESTIGATION
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 3: LIVE INVESTIGATION (The Money Screen)
+           ========================================================================== -->
+      <section id="screen-live_stream" class="screen">
+        <div class="screen-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <h1 class="screen-title">Live Agent Investigation</h1>
+            <p class="screen-desc">Multi-agent timeline streaming live variant scoring, tissue routing, and formal claim checking.</p>
+          </div>
+          <button id="btn-skip-reveal" class="btn-secondary" style="font-size: 14px; padding: 0.5rem 1rem;">
+            Skip to Reveal ⏭
+          </button>
+        </div>
+
+        <div class="investigation-grid">
+          <!-- Left Control & Status Sidebar -->
+          <aside class="investigation-sidebar">
+            <!-- Running Clock -->
+            <div class="live-clock-card">
+              <div class="clock-label">Elapsed Time</div>
+              <div class="clock-value" id="live-clock">00:00.0</div>
+            </div>
+
+            <!-- Decision 1 Triage Card -->
+            <div class="triage-card" id="triage-status-card">
+              <div class="triage-badge">Decisions API (Decision 1)</div>
+              <div class="triage-stats" id="triage-summary-text">
+                Triaging suspects...
+              </div>
+              <div class="triage-tissue" id="triage-tissue-text">
+                Target Tissue: Pending extraction
+              </div>
+            </div>
+
+            <!-- Phenotype Chips extracted by Gemini 4 Carbon -->
+            <div class="phenotypes-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 14px; font-weight: 800; text-transform: uppercase; color: var(--actor-carbon);">
+                  Extracted Phenotypes
+                </span>
+                <span style="font-size: 12px; color: var(--text-dim);">Hover for quote</span>
+              </div>
+              <div class="phenotypes-list" id="phenotype-chips-list">
+                <div style="font-size: 14px; color: var(--text-dim); font-style: italic;">Awaiting Gemini 4 Carbon reading letter...</div>
+              </div>
+            </div>
+
+            <!-- AlphaGenome Live Call Meter -->
+            <div class="meter-card">
+              <div class="meter-header">
+                <span class="meter-title">AlphaGenome Calls</span>
+                <span class="meter-count" id="alphagenome-counter">0 / 28</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="alphagenome-progress-fill"></div>
+              </div>
+              <div style="font-size: 13px; color: var(--text-dim); display: flex; justify-content: space-between;">
+                <span>Deep neural model latency</span>
+                <span id="ag-latency-label">~180ms / call</span>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Right Timeline Stream Panel -->
+          <div class="timeline-panel">
+            <div class="timeline-header">
+              <div class="live-pulse-indicator">
+                <span class="pulse-dot"></span>
+                <span>Active Multi-Agent Stream</span>
+              </div>
+              <div style="font-size: 14px; color: var(--text-muted); font-family: var(--font-mono);">
+                Target: <span id="stream-case-id" style="color: var(--accent-cyan);">d9a7f340be21</span>
+              </div>
+            </div>
+
+            <!-- Live Streaming TraceEvents -->
+            <div class="trace-stream" id="trace-stream" role="log" aria-live="polite">
+              <!-- Dynamically streamed events -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 4: REVEAL
+           ========================================================================== -->
+      <section id="screen-reveal" class="screen">
+        <!-- Dramatic Reveal Banner -->
+        <div class="reveal-hero-banner">
+          <div class="reveal-rank-callout">
+            <div class="rank-badge-huge" id="reveal-rank-number">#1</div>
+            <div>
+              <div class="reveal-title" id="reveal-headline">Hidden Causal Variant Successfully Identified</div>
+              <div class="reveal-subtitle" id="reveal-subheadline">
+                DNM1 c.1335+1605G>A ranked #1 of 205 candidate suspects (Score 0.942)
+              </div>
+            </div>
+          </div>
+          <button id="btn-export-report" class="btn-primary" style="padding: 1rem 1.75rem; font-size: 18px;">
+            📄 Export Evidence Report (.md)
+          </button>
+        </div>
+
+        <!-- AlphaGenome Track Plot (Brain vs Blood) -->
+        <div class="plot-viewer-card">
+          <div class="plot-header">
+            <div>
+              <h2 style="font-size: 20px; font-weight: 800; color: var(--text-primary);">
+                AlphaGenome Tissue Splice Disruption (REF vs ALT)
+              </h2>
+              <p style="font-size: 14px; color: var(--text-muted);">
+                "The prior test looked in the wrong tissue (blood); the model looked in the right one (brain)."
+              </p>
+            </div>
+
+            <!-- Tissue Selector Toggle -->
+            <div class="tissue-toggle-group">
+              <button class="tissue-btn active" data-tissue="brain">Brain Cortex (decisive)</button>
+              <button class="tissue-btn" data-tissue="blood">Whole Blood (negative control)</button>
+            </div>
+          </div>
+
+          <div class="plot-canvas-container">
+            <canvas id="alphagenome-track-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Ranked Top 10 Shortlist -->
+        <div class="shortlist-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h2 style="font-size: 22px; font-weight: 800;">Ranked Candidate Shortlist (Top 10)</h2>
+            <div style="font-size: 14px; color: var(--text-muted);">
+              Each claim verified by deterministic code checker against tool outputs.
+            </div>
+          </div>
+
+          <div id="shortlist-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- Ranked suspects rendered here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================================================
+           SCREEN 5: PROOF & BENCHMARK
+           ========================================================================== -->
+      <section id="screen-proof" class="screen">
+        <div class="screen-header">
+          <h1 class="screen-title">Benchmark Proof & Pre-Registered Failures</h1>
+          <p class="screen-desc">
+            Rigorous evaluation against 169 curated non-coding epilepsy variants across 5 baseline architectures.
+          </p>
+        </div>
+
+        <div class="proof-grid">
+          <!-- Left: Comparative Baselines Table -->
+          <div class="proof-card">
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--accent-cyan);">
+              Headline Hit Rates & Resource Cost
+            </h2>
+            <p style="font-size: 14px; color: var(--text-muted);">
+              All metrics computed with 95% Wilson binomial confidence intervals across N=30 test holdouts.
+            </p>
+
+            <div class="benchmark-table-container">
+              <table class="benchmark-table">
+                <thead>
+                  <tr>
+                    <th>Mode</th>
+                    <th>Hit@1</th>
+                    <th>Hit@5</th>
+                    <th>Hit@10</th>
+                    <th>Time</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody id="benchmark-table-body">
+                  <!-- Dynamically populated from fixtures/API -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right: Pre-registered Honest Failures -->
+          <div class="proof-card">
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--accent-amber);">
+              Pre-Registered Failure Modes (Honest Accounting)
+            </h2>
+            <p style="font-size: 14px; color: var(--text-muted);">
+              Failure modes documented before the hackathon run to prevent post-hoc rationalization.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="failure-modes-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Help / Shortcut Modal -->
+  <dialog id="help-modal" style="background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: var(--radius-lg); padding: 2rem; max-width: 520px; margin: auto; box-shadow: 0 0 40px rgba(0,0,0,0.8);">
+    <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 1rem; color: var(--accent-cyan);">Keyboard Shortcuts</h2>
+    <div style="display: grid; grid-template-columns: 80px 1fr; gap: 0.75rem 1.25rem; font-size: 16px;">
+      <kbd style="background: var(--bg-surface-elevated); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 800;">1 - 5</kbd>
+      <span>Switch between the 5 pipeline screens</span>
+
+      <kbd style="background: var(--bg-surface-elevated); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 800;">R</kbd>
+      <span>Pick a random variant in Picker</span>
+
+      <kbd style="background: var(--bg-surface-elevated); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 800;">Space</kbd>
+      <span>Primary action (Start Investigation, Reveal)</span>
+
+      <kbd style="background: var(--bg-surface-elevated); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 800;">T</kbd>
+      <span>Toggle Dark / Light theme</span>
+
+      <kbd style="background: var(--bg-surface-elevated); padding: 0.2rem 0.5rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 800;">?</kbd>
+      <span>Toggle this shortcut cheat sheet</span>
+    </div>
+    <div style="margin-top: 1.5rem; text-align: right;">
+      <button id="close-help-modal" class="btn-primary" style="font-size: 14px; padding: 0.5rem 1rem;">Close</button>
+    </div>
+  </dialog>
+
+  <!-- ES Modules Root Entry (dual mount supported for FastAPI /static and static http server) -->
+  <script type="module">
+    try {
+      await import("/static/app.js");
+    } catch (e) {
+      await import("./app.js");
+    }
+  </script>
+</body>
+</html>
